@@ -1,0 +1,1101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EB-2 China Visa Bulletin Tracker</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --earth-900: #1A120B;
+    --earth-800: #2D1F16;
+    --earth-700: #3C2A1E;
+    --earth-600: #5C3D2E;
+    --earth-500: #7A5544;
+    --terracotta: #C45A3C;
+    --terracotta-glow: #E8704E;
+    --amber: #D4A937;
+    --amber-light: #F0D078;
+    --sand: #E8D5B5;
+    --sand-light: #F5EDDE;
+    --sage: #7A8B6F;
+    --sage-light: #A4B496;
+    --cream: #FDF8F0;
+    --red-retro: #B33A3A;
+    --green-advance: #5A8A5A;
+    --table-a: #C45A3C;
+    --table-b: #D4A937;
+    --priority-line: #7A8B6F;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--earth-900);
+    color: var(--sand);
+    font-family: 'IBM Plex Mono', monospace;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  .dashboard {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem 2rem 4rem;
+  }
+
+  header {
+    text-align: center;
+    padding: 3rem 0 2rem;
+    border-bottom: 1px solid var(--earth-600);
+    margin-bottom: 2.5rem;
+    position: relative;
+  }
+
+  header::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 120px;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, var(--terracotta), transparent);
+  }
+
+  .title-pre {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--earth-500);
+    margin-bottom: 0.5rem;
+  }
+
+  h1 {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    font-weight: 400;
+    color: var(--sand-light);
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+  }
+
+  h1 span {
+    color: var(--terracotta);
+    font-style: italic;
+    font-weight: 300;
+  }
+
+  .subtitle {
+    font-size: 0.75rem;
+    color: var(--earth-500);
+    margin-top: 0.75rem;
+    letter-spacing: 0.05em;
+  }
+
+  .status-banner {
+    background: linear-gradient(135deg, var(--earth-700) 0%, var(--earth-800) 100%);
+    border: 1px solid var(--sage);
+    border-radius: 12px;
+    padding: 1.75rem 2rem;
+    margin-bottom: 2.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .status-banner::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--sage), var(--sage-light), var(--sage));
+  }
+
+  .status-icon {
+    width: 56px;
+    height: 56px;
+    background: var(--sage);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+    flex-shrink: 0;
+    box-shadow: 0 0 20px rgba(122, 139, 111, 0.3);
+    animation: pulse-glow 3s ease-in-out infinite;
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 0 20px rgba(122, 139, 111, 0.3); }
+    50% { box-shadow: 0 0 30px rgba(122, 139, 111, 0.5); }
+  }
+
+  .status-text h2 {
+    font-family: 'Fraunces', serif;
+    font-size: 1.35rem;
+    font-weight: 400;
+    color: var(--sage-light);
+    margin-bottom: 0.25rem;
+  }
+
+  .status-text p {
+    font-size: 0.72rem;
+    color: var(--earth-500);
+    line-height: 1.5;
+  }
+
+  .status-text .highlight {
+    color: var(--sand);
+    font-weight: 500;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2.5rem;
+  }
+
+  .stat-card {
+    background: var(--earth-800);
+    border: 1px solid var(--earth-700);
+    border-radius: 10px;
+    padding: 1.25rem 1.5rem;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.3s;
+  }
+
+  .stat-card:hover { border-color: var(--earth-600); }
+
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 3px;
+    height: 100%;
+  }
+
+  .stat-card:nth-child(1)::before { background: var(--terracotta); }
+  .stat-card:nth-child(2)::before { background: var(--amber); }
+  .stat-card:nth-child(3)::before { background: var(--sage); }
+  .stat-card:nth-child(4)::before { background: var(--terracotta-glow); }
+  .stat-card:nth-child(5)::before { background: var(--amber-light); }
+
+  .stat-label {
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--earth-500);
+    margin-bottom: 0.5rem;
+  }
+
+  .stat-value {
+    font-family: 'Fraunces', serif;
+    font-size: 1.8rem;
+    font-weight: 400;
+    color: var(--sand-light);
+    line-height: 1;
+  }
+
+  .stat-detail {
+    font-size: 0.65rem;
+    color: var(--earth-500);
+    margin-top: 0.35rem;
+  }
+
+  .chart-section {
+    background: var(--earth-800);
+    border: 1px solid var(--earth-700);
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    position: relative;
+  }
+
+  .chart-section h3 {
+    font-family: 'Fraunces', serif;
+    font-size: 1.15rem;
+    font-weight: 400;
+    color: var(--sand-light);
+    margin-bottom: 0.25rem;
+  }
+
+  .chart-section .chart-desc {
+    font-size: 0.65rem;
+    color: var(--earth-500);
+    margin-bottom: 1.5rem;
+    max-width: 600px;
+  }
+
+  .chart-container {
+    position: relative;
+    width: 100%;
+    height: 420px;
+  }
+
+  .chart-container.short { height: 280px; }
+
+  .chart-legend {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.7rem;
+    color: var(--sand);
+  }
+
+  .legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .legend-line {
+    width: 20px;
+    height: 0;
+    flex-shrink: 0;
+    border-top: 2px dashed;
+  }
+
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+  }
+
+  @media (max-width: 900px) {
+    .two-col { grid-template-columns: 1fr; }
+  }
+
+  .yearly-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.72rem;
+  }
+
+  .yearly-table th {
+    text-align: left;
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--earth-500);
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid var(--earth-700);
+    font-weight: 500;
+  }
+
+  .yearly-table td {
+    padding: 0.6rem 0.75rem;
+    border-bottom: 1px solid var(--earth-700);
+    color: var(--sand);
+  }
+
+  .yearly-table tr:hover td { background: var(--earth-700); }
+  .yearly-table .retro { color: var(--red-retro); font-weight: 600; }
+  .yearly-table .advance { color: var(--green-advance); }
+
+  footer {
+    text-align: center;
+    padding-top: 2rem;
+    border-top: 1px solid var(--earth-700);
+    margin-top: 2rem;
+  }
+
+  footer p {
+    font-size: 0.6rem;
+    color: var(--earth-600);
+    letter-spacing: 0.05em;
+  }
+
+  footer a {
+    color: var(--earth-500);
+    text-decoration: none;
+    border-bottom: 1px dotted var(--earth-600);
+    transition: color 0.2s;
+  }
+
+  footer a:hover { color: var(--terracotta); }
+
+  .plate-deco {
+    position: absolute;
+    top: 1.5rem;
+    right: 1.5rem;
+    display: flex;
+    gap: 3px;
+  }
+
+  .plate {
+    width: 6px;
+    height: 18px;
+    background: var(--earth-700);
+    border-radius: 3px;
+    transform: skewX(-8deg);
+  }
+
+  .plate:nth-child(2) { height: 22px; opacity: 0.8; }
+  .plate:nth-child(3) { height: 16px; opacity: 0.6; }
+  .plate:nth-child(4) { height: 20px; opacity: 0.4; }
+  .plate:nth-child(5) { height: 14px; opacity: 0.3; }
+</style>
+</head>
+<body>
+
+<div class="dashboard">
+  <header>
+    <div class="title-pre">USCIS Employment-Based Immigration</div>
+    <h1>EB-2 China <span>Visa Bulletin</span></h1>
+    <div class="subtitle">Priority Date Tracker &mdash; Oct 2015 to Mar 2026 &mdash; 126 Monthly Bulletins</div>
+    <div class="subtitle" style="margin-top:0.5rem">Set your priority date: add <code style="background:var(--earth-700);padding:2px 6px;border-radius:4px;font-size:0.7rem">?pd=YYYY-MM-DD</code> to the URL</div>
+  </header>
+
+  <div class="status-banner" id="statusBanner">
+    <div class="status-icon" id="statusIcon">&#8987;</div>
+    <div class="status-text">
+      <h2 id="statusTitle">Loading...</h2>
+      <p id="statusDetail"></p>
+    </div>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-label">Table A Cutoff</div>
+      <div class="stat-value">Sep '21</div>
+      <div class="stat-detail">Final Action Date</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Table B Cutoff</div>
+      <div class="stat-value">Jan '22</div>
+      <div class="stat-detail">Dates for Filing</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Avg Movement '25</div>
+      <div class="stat-value">36.3</div>
+      <div class="stat-detail">days/month (Table A)</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Largest Jump</div>
+      <div class="stat-value">+334d</div>
+      <div class="stat-detail">Table B, Oct 2025</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Retrogression</div>
+      <div class="stat-value">-162d</div>
+      <div class="stat-detail">Table A, Feb 2025</div>
+    </div>
+  </div>
+
+  <div class="chart-section">
+    <div class="plate-deco">
+      <div class="plate"></div><div class="plate"></div><div class="plate"></div><div class="plate"></div><div class="plate"></div>
+    </div>
+    <h3>Wait Time to Become Current</h3>
+    <p class="chart-desc">
+      How long EB-2 China applicants waited from priority date to becoming current, for each monthly bulletin.
+      Solid = actual data. Dashed = projected 12 months based on recent cutoff movement velocity.
+    </p>
+    <div class="chart-legend">
+      <div class="legend-item"><div class="legend-dot" style="background:var(--terracotta)"></div> Table A &mdash; Final Action</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--amber)"></div> Table B &mdash; Dates for Filing</div>
+      <div class="legend-item"><div class="legend-line" style="border-color:var(--earth-500)"></div> Dashed = Projected</div>
+    </div>
+    <div class="chart-container">
+      <canvas id="waitChart"></canvas>
+    </div>
+  </div>
+
+  <div class="chart-section">
+    <div class="plate-deco">
+      <div class="plate"></div><div class="plate"></div><div class="plate"></div><div class="plate"></div><div class="plate"></div>
+    </div>
+    <h3>Priority Date Timeline</h3>
+    <p class="chart-desc">
+      Historical cutoff dates for EB-2 China. Table A (Final Action) determines visa issuance;
+      Table B (Dates for Filing) allows earlier application submission. Your priority date shown as reference.
+    </p>
+    <div class="chart-legend">
+      <div class="legend-item"><div class="legend-dot" style="background:var(--terracotta)"></div> Table A &mdash; Final Action</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--amber)"></div> Table B &mdash; Dates for Filing</div>
+      <div class="legend-item"><div class="legend-line" style="border-color:var(--sage)"></div> Priority Date</div>
+    </div>
+    <div class="chart-container">
+      <canvas id="timelineChart"></canvas>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="chart-section">
+      <div class="plate-deco">
+        <div class="plate"></div><div class="plate"></div><div class="plate"></div>
+      </div>
+      <h3>Monthly Movement</h3>
+      <p class="chart-desc">Table A priority date change per month (last 24 bulletins). Green = advancement, red = retrogression.</p>
+      <div class="chart-container short">
+        <canvas id="movementChart"></canvas>
+      </div>
+    </div>
+
+    <div class="chart-section">
+      <div class="plate-deco">
+        <div class="plate"></div><div class="plate"></div><div class="plate"></div>
+      </div>
+      <h3>Yearly Summary</h3>
+      <p class="chart-desc">Average daily movement per month and retrogression frequency by fiscal year.</p>
+      <div style="overflow-x:auto;">
+        <table class="yearly-table">
+          <thead>
+            <tr>
+              <th>Year</th>
+              <th>Table</th>
+              <th>Avg Days/Mo</th>
+              <th>Retro</th>
+              <th>Advance</th>
+            </tr>
+          </thead>
+          <tbody id="yearlyBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="chart-section">
+    <div class="plate-deco">
+      <div class="plate"></div><div class="plate"></div><div class="plate"></div><div class="plate"></div>
+    </div>
+    <h3>Table A vs Table B Gap</h3>
+    <p class="chart-desc">
+      The spread between Table B (filing eligibility) and Table A (visa issuance) cutoff dates.
+      A wider gap means longer waits between filing and approval.
+    </p>
+    <div class="chart-container short">
+      <canvas id="gapChart"></canvas>
+    </div>
+  </div>
+
+  <footer>
+    <p>
+      Data: U.S. Department of State Visa Bulletin &middot;
+      13,109 records &middot; Built with SQLite + Chart.js &middot;
+      Generated 2026-02-19
+    </p>
+  </footer>
+</div>
+
+<script>
+// ─── DATA (EB-2 China, Oct 2015 – Mar 2026) ─────────────
+// [bulletin_date, table_type, priority_date]
+var TABLE_A_RAW = [
+  ["2015-10","2012-01-01"],["2015-11","2012-02-01"],["2015-12","2012-02-01"],
+  ["2016-01","2012-02-01"],["2016-02","2012-03-01"],["2016-03","2012-08-01"],
+  ["2016-04","2012-09-01"],["2016-05","2012-09-01"],["2016-06","2010-01-01"],
+  ["2016-07","2010-01-01"],["2016-08","2010-01-01"],["2016-09","2010-01-01"],
+  ["2016-10","2012-02-15"],["2016-11","2012-07-15"],["2016-12","2012-09-22"],
+  ["2017-01","2012-10-15"],["2017-02","2012-11-15"],["2017-03","2012-12-15"],
+  ["2017-04","2013-01-15"],["2017-05","2013-02-08"],["2017-06","2013-03-01"],
+  ["2017-07","2013-03-22"],["2017-08","2013-04-22"],["2017-09","2013-05-15"],
+  ["2017-10","2013-05-22"],["2017-11","2013-06-15"],["2017-12","2013-07-01"],
+  ["2018-01","2013-08-08"],["2018-02","2013-10-01"],["2018-03","2013-12-08"],
+  ["2018-04","2014-08-01"],["2018-05","2014-09-01"],["2018-06","2014-09-01"],
+  ["2018-07","2015-01-01"],["2018-08","2015-03-01"],["2018-09","2013-01-01"],
+  ["2018-10","2015-04-01"],["2018-11","2015-05-15"],["2018-12","2015-07-01"],
+  ["2019-01","2015-08-01"],["2019-02","2015-10-01"],["2019-03","2016-01-01"],
+  ["2019-04","2016-04-01"],["2019-05","2016-05-15"],["2019-06","2016-08-01"],
+  ["2019-07","2016-11-01"],["2019-08","2017-01-01"],["2019-09","2017-01-01"],
+  ["2019-10","2015-01-01"],["2019-11","2015-03-15"],["2019-12","2015-06-22"],
+  ["2020-01","2015-07-01"],["2020-02","2015-07-15"],["2020-03","2015-08-15"],
+  ["2020-04","2015-09-01"],["2020-05","2015-10-01"],["2020-06","2015-11-01"],
+  ["2020-07","2015-11-08"],["2020-08","2016-01-15"],["2020-09","2016-01-15"],
+  ["2020-10","2016-03-01"],["2020-11","2016-04-22"],["2020-12","2016-05-01"],
+  ["2021-01","2016-06-01"],["2021-02","2016-06-15"],["2021-03","2016-07-15"],
+  ["2021-04","2016-09-01"],["2021-05","2016-12-01"],["2021-06","2017-05-01"],
+  ["2021-07","2017-12-01"],["2021-08","2018-04-01"],["2021-09","2018-07-01"],
+  ["2021-10","2018-07-01"],["2021-11","2018-11-15"],["2021-12","2019-01-01"],
+  ["2022-01","2019-01-22"],["2022-02","2019-03-01"],["2022-03","2019-03-01"],
+  ["2022-04","2019-03-01"],["2022-05","2019-03-01"],["2022-06","2019-03-01"],
+  ["2022-07","2019-04-01"],["2022-08","2019-04-01"],["2022-09","2019-04-01"],
+  ["2022-10","2019-06-08"],["2022-11","2019-06-08"],["2022-12","2019-06-08"],
+  ["2023-01","2019-06-08"],["2023-02","2019-06-08"],["2023-03","2019-06-08"],
+  ["2023-04","2019-06-08"],["2023-05","2019-06-08"],["2023-06","2019-06-08"],
+  ["2023-07","2019-06-08"],["2023-08","2019-07-08"],["2023-09","2019-07-08"],
+  ["2023-10","2019-10-01"],["2023-11","2019-10-01"],["2023-12","2019-10-22"],
+  ["2024-01","2020-01-01"],["2024-02","2020-01-01"],["2024-03","2020-01-01"],
+  ["2024-04","2020-02-01"],["2024-05","2020-02-01"],["2024-06","2020-02-01"],
+  ["2024-07","2020-03-01"],["2024-08","2020-03-01"],["2024-09","2020-03-01"],
+  ["2024-10","2020-03-22"],["2024-11","2020-03-22"],["2024-12","2020-03-22"],
+  ["2025-01","2020-10-01"],["2025-02","2020-04-22"],["2025-03","2020-05-08"],
+  ["2025-04","2020-10-01"],["2025-05","2020-10-01"],["2025-06","2020-12-01"],
+  ["2025-07","2020-12-15"],["2025-08","2020-12-15"],["2025-09","2020-12-15"],
+  ["2025-10","2021-04-01"],["2025-11","2021-04-01"],["2025-12","2021-06-01"],
+  ["2026-01","2021-09-01"],["2026-02","2021-09-01"],["2026-03","2021-09-01"]
+];
+
+var TABLE_B_RAW = [
+  ["2015-10","2013-01-01"],["2015-11","2013-01-01"],["2015-12","2013-01-01"],
+  ["2016-01","2013-01-01"],["2016-02","2013-01-01"],["2016-03","2013-06-01"],
+  ["2016-04","2013-06-01"],["2016-05","2013-06-01"],["2016-06","2013-06-01"],
+  ["2016-07","2013-06-01"],["2016-08","2013-06-01"],["2016-09","2013-06-01"],
+  ["2016-10","2013-03-01"],["2016-11","2013-03-01"],["2016-12","2013-03-01"],
+  ["2017-01","2013-03-01"],["2017-02","2013-03-01"],["2017-03","2013-03-01"],
+  ["2017-04","2013-03-01"],["2017-05","2013-10-01"],["2017-06","2013-10-01"],
+  ["2017-07","2013-10-01"],["2017-08","2013-10-01"],["2017-09","2013-10-01"],
+  ["2017-10","2013-11-15"],["2017-11","2013-11-15"],["2017-12","2013-11-15"],
+  ["2018-01","2013-11-15"],["2018-02","2014-11-15"],["2018-03","2015-02-01"],
+  ["2018-04","2015-02-01"],["2018-05","2015-02-01"],["2018-06","2015-02-01"],
+  ["2018-07","2015-04-01"],["2018-08","2015-04-01"],["2018-09","2015-04-01"],
+  ["2018-10","2015-06-15"],["2018-11","2015-06-15"],["2018-12","2015-09-08"],
+  ["2019-01","2015-09-08"],["2019-02","2015-11-01"],["2019-03","2016-05-01"],
+  ["2019-04","2016-07-01"],["2019-05","2016-09-01"],["2019-06","2016-11-01"],
+  ["2019-07","2017-02-01"],["2019-08","2017-02-01"],["2019-09","2017-06-01"],
+  ["2019-10","2016-08-01"],["2019-11","2016-08-01"],["2019-12","2016-08-01"],
+  ["2020-01","2016-08-01"],["2020-02","2016-08-01"],["2020-03","2016-08-01"],
+  ["2020-04","2016-08-01"],["2020-05","2016-08-01"],["2020-06","2016-08-01"],
+  ["2020-07","2016-08-01"],["2020-08","2016-08-01"],["2020-09","2016-08-01"],
+  ["2020-10","2016-10-01"],["2020-11","2016-10-01"],["2020-12","2016-10-01"],
+  ["2021-01","2016-10-01"],["2021-02","2016-10-01"],["2021-03","2016-10-01"],
+  ["2021-04","2017-01-01"],["2021-05","2017-07-01"],["2021-06","2018-01-01"],
+  ["2021-07","2018-07-01"],["2021-08","2018-07-01"],["2021-09","2018-09-01"],
+  ["2021-10","2018-09-01"],["2021-11","2019-02-01"],["2021-12","2019-04-01"],
+  ["2022-01","2019-04-01"],["2022-02","2019-04-01"],["2022-03","2019-04-01"],
+  ["2022-04","2019-04-01"],["2022-05","2019-04-01"],["2022-06","2019-04-01"],
+  ["2022-07","2019-05-01"],["2022-08","2019-05-01"],["2022-09","2019-05-01"],
+  ["2022-10","2019-07-08"],["2022-11","2019-07-08"],["2022-12","2019-07-08"],
+  ["2023-01","2019-07-08"],["2023-02","2019-07-08"],["2023-03","2019-07-08"],
+  ["2023-04","2019-07-08"],["2023-05","2019-07-08"],["2023-06","2019-07-08"],
+  ["2023-07","2019-07-08"],["2023-08","2019-10-08"],["2023-09","2019-10-08"],
+  ["2023-10","2020-01-01"],["2023-11","2020-01-01"],["2023-12","2020-01-01"],
+  ["2024-01","2020-06-01"],["2024-02","2020-06-01"],["2024-03","2020-06-01"],
+  ["2024-04","2020-06-01"],["2024-05","2020-06-01"],["2024-06","2020-06-01"],
+  ["2024-07","2020-06-01"],["2024-08","2020-06-01"],["2024-09","2020-06-01"],
+  ["2024-10","2020-10-01"],["2024-11","2020-10-01"],["2024-12","2020-10-01"],
+  ["2025-02","2020-10-01"],["2025-03","2020-10-01"],["2025-04","2020-11-01"],
+  ["2025-05","2020-11-01"],["2025-06","2021-01-01"],["2025-07","2021-01-01"],
+  ["2025-08","2021-01-01"],["2025-09","2021-01-01"],["2025-10","2021-12-01"],
+  ["2025-11","2021-12-01"],["2025-12","2021-12-01"],["2026-01","2022-01-01"],
+  ["2026-02","2022-01-01"],["2026-03","2022-01-01"]
+];
+
+var MOVEMENT_A = [
+  {month:"2024-04",days:31},{month:"2024-05",days:0},{month:"2024-06",days:0},
+  {month:"2024-07",days:29},{month:"2024-08",days:0},{month:"2024-09",days:0},
+  {month:"2024-10",days:21},{month:"2024-11",days:0},{month:"2024-12",days:0},
+  {month:"2025-01",days:193},{month:"2025-02",days:-162},{month:"2025-03",days:16},
+  {month:"2025-04",days:146},{month:"2025-05",days:0},{month:"2025-06",days:61},
+  {month:"2025-07",days:14},{month:"2025-08",days:0},{month:"2025-09",days:0},
+  {month:"2025-10",days:107},{month:"2025-11",days:0},{month:"2025-12",days:61},
+  {month:"2026-01",days:92},{month:"2026-02",days:0},{month:"2026-03",days:0}
+];
+
+var YEARLY = [
+  {year:"2026",table:"A",avg:30.7,retro:0,adv:1},
+  {year:"2026",table:"B",avg:10.3,retro:0,adv:1},
+  {year:"2025",table:"A",avg:36.3,retro:1,adv:7},
+  {year:"2025",table:"B",avg:42.6,retro:0,adv:3},
+  {year:"2024",table:"A",avg:12.7,retro:0,adv:4},
+  {year:"2024",table:"B",avg:22.8,retro:0,adv:2},
+  {year:"2023",table:"A",avg:11.3,retro:0,adv:3},
+  {year:"2023",table:"B",avg:14.8,retro:0,adv:2},
+  {year:"2022",table:"A",avg:13.2,retro:0,adv:4},
+  {year:"2022",table:"B",avg:8.2,retro:0,adv:2},
+  {year:"2021",table:"A",avg:81.3,retro:0,adv:11},
+  {year:"2021",table:"B",avg:76.0,retro:0,adv:7},
+  {year:"2020",table:"A",avg:26.2,retro:0,adv:11},
+  {year:"2020",table:"B",avg:5.1,retro:0,adv:1},
+  {year:"2019",table:"A",avg:-0.8,retro:1,adv:10},
+  {year:"2019",table:"B",avg:27.3,retro:1,adv:7},
+  {year:"2018",table:"A",avg:60.8,retro:1,adv:10},
+  {year:"2018",table:"B",avg:55.2,retro:0,adv:5},
+  {year:"2017",table:"A",avg:23.5,retro:0,adv:12},
+  {year:"2017",table:"B",avg:21.6,retro:0,adv:2},
+  {year:"2016",table:"A",avg:19.5,retro:1,adv:6},
+  {year:"2016",table:"B",avg:4.9,retro:1,adv:1}
+];
+
+// Priority date: set via URL param ?pd=YYYY-MM-DD (default: example date)
+var urlParams = new URLSearchParams(window.location.search);
+var PD_STRING = urlParams.get('pd') || '2022-06-15';
+var MY_PD_TS = new Date(PD_STRING).getTime();
+var MY_PD_LABEL = fmtDate(PD_STRING);
+
+// Dynamic status banner
+(function() {
+  var lastA = TABLE_A_RAW[TABLE_A_RAW.length - 1];
+  var lastB = TABLE_B_RAW[TABLE_B_RAW.length - 1];
+  var cutA = new Date(lastA[1]).getTime();
+  var cutB = new Date(lastB[1]).getTime();
+  var isCurrentA = cutA >= MY_PD_TS;
+  var isCurrentB = cutB >= MY_PD_TS;
+  var bMonth = fmtLabel(lastA[0]);
+  var icon = document.getElementById('statusIcon');
+  var title = document.getElementById('statusTitle');
+  var detail = document.getElementById('statusDetail');
+  var banner = document.getElementById('statusBanner');
+  if (isCurrentA) {
+    icon.textContent = '\u2713';
+    title.textContent = 'Priority Date Is Current';
+    banner.style.borderColor = '#7A8B6F';
+  } else {
+    icon.textContent = '\u23F3';
+    title.textContent = 'Priority Date Not Yet Current';
+    banner.style.borderColor = '#D4A937';
+  }
+  var txt = 'Priority date: ' + MY_PD_LABEL;
+  txt += ' \u2014 Table A cutoff: ' + fmtDate(lastA[1]);
+  if (!isCurrentA) txt += ' (' + Math.round((MY_PD_TS - cutA) / 86400000) + ' days away)';
+  txt += ' \u00B7 Table B cutoff: ' + fmtDate(lastB[1]);
+  if (!isCurrentB) txt += ' (' + Math.round((MY_PD_TS - cutB) / 86400000) + ' days away)';
+  txt += ' \u2014 As of ' + bMonth + ' bulletin';
+  detail.textContent = txt;
+})();
+
+// ─── Helpers ───
+var MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function fmtLabel(ym) {
+  var p = ym.split('-');
+  return MONTHS[parseInt(p[1],10)-1] + " '" + p[0].slice(2);
+}
+function fmtDate(iso) {
+  var d = new Date(iso);
+  return MONTHS[d.getUTCMonth()] + ' ' + d.getUTCDate() + ', ' + d.getUTCFullYear();
+}
+function pdTimestamp(iso) { return new Date(iso).getTime(); }
+
+// ─── Build aligned label set (union of Table A months) ───
+var labels = TABLE_A_RAW.map(function(r) { return r[0]; });
+var labelsFmt = labels.map(fmtLabel);
+
+// Build lookup for Table B by month key
+var tableBMap = {};
+TABLE_B_RAW.forEach(function(r) { tableBMap[r[0]] = r[1]; });
+
+// ─── Chart defaults ───
+Chart.defaults.color = '#7A5544';
+Chart.defaults.borderColor = 'rgba(92,61,46,0.3)';
+Chart.defaults.font.family = "'IBM Plex Mono', monospace";
+Chart.defaults.font.size = 11;
+
+var tooltipStyle = {
+  backgroundColor: 'rgba(26,18,11,0.95)',
+  titleColor: '#E8D5B5',
+  bodyColor: '#E8D5B5',
+  borderColor: '#5C3D2E',
+  borderWidth: 1,
+  padding: 12
+};
+
+// ─── 0. Wait Time to Become Current ───
+// For each bulletin month: wait = bulletin_date - cutoff_date
+// This shows how long applicants becoming current that month actually waited.
+(function() {
+  var DAY = 86400000;
+
+  function addMonths(ym, n) {
+    var p = ym.split('-'), yr = parseInt(p[0]), mo = parseInt(p[1]) + n;
+    while (mo > 12) { yr++; mo -= 12; }
+    return yr + '-' + (mo < 10 ? '0' + mo : '' + mo);
+  }
+
+  var bMap = {};
+  TABLE_B_RAW.forEach(function(r) { bMap[r[0]] = r[1]; });
+
+  // Real data: wait_time = bulletin_month - cutoff_date
+  var months = [], wtA = [], wtB = [];
+  for (var i = 0; i < TABLE_A_RAW.length; i++) {
+    var m = TABLE_A_RAW[i][0];
+    months.push(m);
+    var bulletin = new Date(m + '-01').getTime();
+    wtA.push(Math.round((bulletin - new Date(TABLE_A_RAW[i][1]).getTime()) / DAY));
+    var bp = bMap[m];
+    wtB.push(bp ? Math.round((bulletin - new Date(bp).getTime()) / DAY) : null);
+  }
+
+  var lastReal = months.length - 1;
+
+  // Prediction: project 12 months forward using recent cutoff movement rates
+  var mvA = [];
+  for (var i = Math.max(1, TABLE_A_RAW.length - 6); i < TABLE_A_RAW.length; i++) {
+    mvA.push((new Date(TABLE_A_RAW[i][1]).getTime() - new Date(TABLE_A_RAW[i-1][1]).getTime()) / DAY);
+  }
+  var avgA = mvA.length ? mvA.reduce(function(s,v){return s+v;},0) / mvA.length : 30;
+
+  var mvB = [];
+  for (var i = Math.max(1, TABLE_B_RAW.length - 6); i < TABLE_B_RAW.length; i++) {
+    mvB.push((new Date(TABLE_B_RAW[i][1]).getTime() - new Date(TABLE_B_RAW[i-1][1]).getTime()) / DAY);
+  }
+  var avgB = mvB.length ? mvB.reduce(function(s,v){return s+v;},0) / mvB.length : 30;
+
+  var lastCutA = new Date(TABLE_A_RAW[TABLE_A_RAW.length-1][1]).getTime();
+  var lastCutB = new Date(TABLE_B_RAW[TABLE_B_RAW.length-1][1]).getTime();
+  var lastMonth = months[months.length - 1];
+
+  for (var j = 1; j <= 12; j++) {
+    var nm = addMonths(lastMonth, j);
+    months.push(nm);
+    var nb = new Date(nm + '-01').getTime();
+    wtA.push(Math.round((nb - (lastCutA + avgA * j * DAY)) / DAY));
+    wtB.push(Math.round((nb - (lastCutB + avgB * j * DAY)) / DAY));
+  }
+
+  var chartLabels = months.map(fmtLabel);
+
+  // Highlight the month the configured priority date became current on Table A
+  var myPD = MY_PD_TS;
+  var myMonth = null;
+  for (var i = 0; i < TABLE_A_RAW.length; i++) {
+    if (new Date(TABLE_A_RAW[i][1]).getTime() >= myPD) { myMonth = TABLE_A_RAW[i][0]; break; }
+  }
+
+  new Chart(document.getElementById('waitChart').getContext('2d'), {
+    type: 'line',
+    data: {
+      labels: chartLabels,
+      datasets: [
+        {
+          label: 'Table A',
+          data: wtA,
+          borderColor: '#C45A3C',
+          backgroundColor: 'rgba(196,90,60,0.06)',
+          fill: true,
+          borderWidth: 2.5,
+          pointRadius: wtA.map(function(v,i){ return months[i] === myMonth ? 7 : 0; }),
+          pointBackgroundColor: '#7A8B6F',
+          pointBorderColor: '#1A120B',
+          pointBorderWidth: 2,
+          pointHoverRadius: 5,
+          pointHoverBackgroundColor: '#C45A3C',
+          tension: 0.15,
+          segment: {
+            borderDash: function(ctx) {
+              return ctx.p0DataIndex >= lastReal ? [6, 3] : undefined;
+            }
+          }
+        },
+        {
+          label: 'Table B',
+          data: wtB,
+          borderColor: '#D4A937',
+          backgroundColor: 'rgba(212,169,55,0.06)',
+          fill: true,
+          borderWidth: 2.5,
+          pointRadius: 0,
+          pointHoverRadius: 5,
+          pointHoverBackgroundColor: '#D4A937',
+          tension: 0.15,
+          spanGaps: true,
+          segment: {
+            borderDash: function(ctx) {
+              return ctx.p0DataIndex >= lastReal ? [6, 3] : undefined;
+            }
+          }
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        tooltip: Object.assign({}, tooltipStyle, {
+          callbacks: {
+            title: function(items) {
+              var idx = items[0].dataIndex;
+              var lbl = items[0].label;
+              if (months[idx] === myMonth) lbl += ' (became current)';
+              else if (idx > lastReal) lbl += ' (projected)';
+              return lbl;
+            },
+            label: function(item) {
+              if (item.parsed.y == null) return '';
+              var yr = (item.parsed.y / 365).toFixed(1);
+              return item.dataset.label + ': ' + yr + ' yr wait (' + item.parsed.y + ' days)';
+            }
+          }
+        })
+      },
+      scales: {
+        x: {
+          grid: { color: 'rgba(92,61,46,0.15)' },
+          ticks: { color: '#7A5544', maxRotation: 0, autoSkip: true, maxTicksLimit: 12, font: { size: 10 } }
+        },
+        y: {
+          grid: { color: 'rgba(92,61,46,0.15)' },
+          ticks: {
+            color: '#7A5544',
+            callback: function(v) { return (v / 365).toFixed(1) + ' yr'; }
+          },
+          title: { display: true, text: 'Wait Time', color: '#7A5544', font: { size: 10 } },
+          min: 0
+        }
+      }
+    }
+  });
+})();
+
+// ─── 1. Timeline Chart (category x-axis) ───
+new Chart(document.getElementById('timelineChart').getContext('2d'), {
+  type: 'line',
+  data: {
+    labels: labelsFmt,
+    datasets: [
+      {
+        label: 'Table A - Final Action',
+        data: TABLE_A_RAW.map(function(r) { return pdTimestamp(r[1]); }),
+        borderColor: '#C45A3C',
+        backgroundColor: 'rgba(196,90,60,0.08)',
+        fill: false,
+        borderWidth: 2.5,
+        pointRadius: 0,
+        pointHoverRadius: 5,
+        pointHoverBackgroundColor: '#C45A3C',
+        tension: 0.1
+      },
+      {
+        label: 'Table B - Dates for Filing',
+        data: labels.map(function(lbl) {
+          var pd = tableBMap[lbl];
+          return pd ? pdTimestamp(pd) : null;
+        }),
+        borderColor: '#D4A937',
+        backgroundColor: 'rgba(212,169,55,0.08)',
+        fill: false,
+        borderWidth: 2.5,
+        pointRadius: 0,
+        pointHoverRadius: 5,
+        pointHoverBackgroundColor: '#D4A937',
+        tension: 0.1,
+        spanGaps: true
+      },
+      {
+        label: 'Priority Date (' + fmtLabel(PD_STRING.slice(0,7)) + ')',
+        data: labels.map(function() { return MY_PD_TS; }),
+        borderColor: '#7A8B6F',
+        borderDash: [8, 4],
+        borderWidth: 2,
+        pointRadius: 0,
+        pointHoverRadius: 0,
+        fill: false
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: { mode: 'index', intersect: false },
+    plugins: {
+      legend: { display: false },
+      tooltip: Object.assign({}, tooltipStyle, {
+        callbacks: {
+          label: function(item) {
+            if (item.datasetIndex === 2) return 'Priority Date: ' + MY_PD_LABEL;
+            if (item.parsed.y == null) return '';
+            return item.dataset.label + ': ' + fmtDate(new Date(item.parsed.y).toISOString().slice(0,10));
+          }
+        }
+      })
+    },
+    scales: {
+      x: {
+        grid: { color: 'rgba(92,61,46,0.15)' },
+        ticks: {
+          color: '#7A5544',
+          maxRotation: 0,
+          autoSkip: true,
+          maxTicksLimit: 12,
+          font: { size: 10 }
+        }
+      },
+      y: {
+        type: 'linear',
+        grid: { color: 'rgba(92,61,46,0.15)' },
+        ticks: {
+          color: '#7A5544',
+          callback: function(val) {
+            var d = new Date(val);
+            return MONTHS[d.getUTCMonth()] + " '" + String(d.getUTCFullYear()).slice(2);
+          }
+        }
+      }
+    }
+  }
+});
+
+// ─── 2. Monthly Movement Bar Chart ───
+new Chart(document.getElementById('movementChart').getContext('2d'), {
+  type: 'bar',
+  data: {
+    labels: MOVEMENT_A.map(function(d) { return d.month; }),
+    datasets: [{
+      label: 'Days Moved',
+      data: MOVEMENT_A.map(function(d) { return d.days; }),
+      backgroundColor: MOVEMENT_A.map(function(d) {
+        if (d.days > 0) return 'rgba(90,138,90,0.8)';
+        if (d.days < 0) return 'rgba(179,58,58,0.8)';
+        return 'rgba(92,61,46,0.3)';
+      }),
+      borderColor: MOVEMENT_A.map(function(d) {
+        if (d.days > 0) return '#5A8A5A';
+        if (d.days < 0) return '#B33A3A';
+        return 'rgba(92,61,46,0.5)';
+      }),
+      borderWidth: 1,
+      borderRadius: 3
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: Object.assign({}, tooltipStyle, {
+        callbacks: {
+          label: function(item) {
+            var v = item.parsed.y;
+            if (v > 0) return '+' + v + ' days advanced';
+            if (v < 0) return v + ' days retrogressed';
+            return 'No movement';
+          }
+        }
+      })
+    },
+    scales: {
+      x: {
+        grid: { display: false },
+        ticks: { color: '#7A5544', maxRotation: 45, font: { size: 9 } }
+      },
+      y: {
+        grid: { color: 'rgba(92,61,46,0.15)' },
+        ticks: {
+          color: '#7A5544',
+          callback: function(v) { return v > 0 ? '+' + v + 'd' : v + 'd'; }
+        }
+      }
+    }
+  }
+});
+
+// ─── 3. Yearly Summary Table (safe DOM construction) ───
+(function() {
+  var tbody = document.getElementById('yearlyBody');
+  YEARLY.forEach(function(row) {
+    var tr = document.createElement('tr');
+
+    var tdYear = document.createElement('td');
+    tdYear.textContent = row.year;
+    tr.appendChild(tdYear);
+
+    var tdTable = document.createElement('td');
+    tdTable.textContent = row.table === 'A' ? 'Final Action' : 'Filing';
+    tdTable.style.color = row.table === 'A' ? '#C45A3C' : '#D4A937';
+    tr.appendChild(tdTable);
+
+    var tdAvg = document.createElement('td');
+    tdAvg.textContent = (row.avg > 0 ? '+' : '') + row.avg.toFixed(1);
+    if (row.avg < 0) tdAvg.className = 'retro';
+    else if (row.avg > 30) tdAvg.className = 'advance';
+    tr.appendChild(tdAvg);
+
+    var tdRetro = document.createElement('td');
+    tdRetro.textContent = row.retro;
+    if (row.retro > 0) tdRetro.className = 'retro';
+    tr.appendChild(tdRetro);
+
+    var tdAdv = document.createElement('td');
+    tdAdv.textContent = row.adv;
+    tr.appendChild(tdAdv);
+
+    tbody.appendChild(tr);
+  });
+})();
+
+// ─── 4. Table A vs B Gap Chart (category x-axis) ───
+var gapLabels = [];
+var gapValues = [];
+TABLE_A_RAW.forEach(function(aRow) {
+  var bPd = tableBMap[aRow[0]];
+  if (bPd) {
+    gapLabels.push(fmtLabel(aRow[0]));
+    gapValues.push(Math.round((new Date(bPd) - new Date(aRow[1])) / (1000*60*60*24)));
+  }
+});
+
+new Chart(document.getElementById('gapChart').getContext('2d'), {
+  type: 'line',
+  data: {
+    labels: gapLabels,
+    datasets: [{
+      label: 'Gap (Table B - Table A)',
+      data: gapValues,
+      borderColor: '#D4A937',
+      backgroundColor: 'rgba(212,169,55,0.12)',
+      fill: true,
+      borderWidth: 2,
+      pointRadius: 0,
+      pointHoverRadius: 4,
+      tension: 0.2
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: Object.assign({}, tooltipStyle, {
+        callbacks: {
+          label: function(item) {
+            return item.parsed.y + ' days gap between Table B and Table A';
+          }
+        }
+      })
+    },
+    scales: {
+      x: {
+        grid: { color: 'rgba(92,61,46,0.15)' },
+        ticks: {
+          color: '#7A5544',
+          maxRotation: 0,
+          autoSkip: true,
+          maxTicksLimit: 12,
+          font: { size: 10 }
+        }
+      },
+      y: {
+        grid: { color: 'rgba(92,61,46,0.15)' },
+        ticks: {
+          color: '#7A5544',
+          callback: function(v) { return v + 'd'; }
+        },
+        title: {
+          display: true,
+          text: 'Days',
+          color: '#7A5544',
+          font: { size: 10 }
+        }
+      }
+    }
+  }
+});
+</script>
+</body>
+</html>

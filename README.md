@@ -79,7 +79,7 @@ Saved queries are available in `queries/`.
 # Add your case
 sqlite3 visa_bulletin.db \
   "INSERT INTO user_tracking (label, category, country, priority_date)
-   VALUES ('My EB-2 case', '2nd', 'China', '2021-06-15');"
+   VALUES ('Example EB-2', '2nd', 'China', '2022-01-15');"
 
 # Check your status against the latest bulletin
 sqlite3 -header -column visa_bulletin.db \
