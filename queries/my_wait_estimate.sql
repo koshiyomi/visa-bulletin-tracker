@@ -4,7 +4,7 @@
 -- STEP 1: Insert your info into user_tracking (run once, then comment out):
 --
 --   INSERT INTO user_tracking (label, category, country, priority_date)
---   VALUES ('My EB2 Case', '2nd', 'India', '2020-06-15');
+--   VALUES ('My EB2 Case', '2nd', 'China', '2020-06-15');
 --
 -- STEP 2: Run this file to see your status against the latest bulletin:
 --

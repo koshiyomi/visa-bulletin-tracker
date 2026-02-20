@@ -67,7 +67,7 @@ Yearly summary with retrogression count:
 sqlite3 -header -column visa_bulletin.db \
   "SELECT year, avg_days_moved, retrogression_months
    FROM v_yearly_summary
-   WHERE category='2nd' AND country='India' AND table_type='Final_Action'
+   WHERE category='2nd' AND country='China' AND table_type='Final_Action'
    ORDER BY year DESC LIMIT 5;"
 ```
 
@@ -79,7 +79,7 @@ Saved queries are available in `queries/`.
 # Add your case
 sqlite3 visa_bulletin.db \
   "INSERT INTO user_tracking (label, category, country, priority_date)
-   VALUES ('My EB-2 case', '2nd', 'India', '2021-06-15');"
+   VALUES ('My EB-2 case', '2nd', 'China', '2021-06-15');"
 
 # Check your status against the latest bulletin
 sqlite3 -header -column visa_bulletin.db \

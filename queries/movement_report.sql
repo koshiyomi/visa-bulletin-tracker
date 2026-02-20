@@ -1,5 +1,5 @@
 -- movement_report.sql
--- Monthly movement report for EB2 India (Final Action) — last 24 months
+-- Monthly movement report for EB2 China (Final Action) — last 24 months
 --
 -- Shows how much the priority date moved each month with a human-readable summary.
 -- Sentinel values: 9999 = became current, -9999 = left current status.
@@ -24,6 +24,6 @@ SELECT
 FROM v_movement
 WHERE table_type = 'Final_Action'
   AND category   = '2nd'
-  AND country    = 'India'
+  AND country    = 'China'
 ORDER BY current_month DESC
 LIMIT 24;
