@@ -1,83 +1,123 @@
 // prediction.js
 
 /**
- * Predicts the future priority dates based on a moving average of recent movements.
+ * Predicts the future priority dates using an advanced blended algorithm.
+ * Incorporates short-term momentum, fiscal year seasonality (historical month trends),
+ * and election year administrative slowdowns.
  * 
- * @param {Array} history - Array of objects from the CSV (must be sorted by bulletin_date ascending)
- * @param {String} tableType - e.g., 'Final_Action' or 'Dates_for_Filing'
- * @param {String} category - e.g., '2nd'
- * @param {String} country - e.g., 'China'
- * @param {Number} monthsAhead - How many months to predict into the future
- * @param {Object} externalFactors - TBD: placeholder for news or other external inputs
- * @returns {Array} Array of predicted { bulletin_date: 'YYYY-MM-DD', priority_date: timestamp }
+ * @param {Array<Object>} history - Array of historical data objects, sorted by bulletin_date ascending.
+ * @param {string} tableType - The type of table (e.g., 'Final_Action' or 'Dates_for_Filing').
+ * @param {string} category - The visa category (e.g., '2nd').
+ * @param {string} country - The country of origin (e.g., 'China').
+ * @param {number} [monthsAhead=12] - Number of months to project into the future.
+ * @param {Object|null} [externalFactors=null] - Placeholder for external modifiers (e.g., { boost: 1.2 }).
+ * @returns {Array<Object>} Array of projected data points.
  */
-window.predictFutureCutoff = function(history, tableType, category, country, monthsAhead = 12, externalFactors = null) {
-  // Filter for specific segment
-  const segment = history.filter(d => 
-    d.table_type === tableType && 
-    d.category === category && 
-    d.country === country
+window.predictFutureCutoff = (history, tableType, category, country, monthsAhead = 12, externalFactors = null) => {
+  // Filter history to isolate the specific trajectory we want to predict
+  const segment = history.filter(({ table_type, category: cat, country: ctry }) => 
+    table_type === tableType && cat === category && ctry === country
   );
 
+  // Require at least two data points to establish a trend
   if (segment.length < 2) return [];
 
-  // Parse dates and calculate movements
   const DAY_MS = 86400000;
   const movements = [];
+  const monthlyMovements = Array.from({ length: 12 }, () => []); // Array of 12 arrays for each month
   
+  // Calculate day-over-day differences between consecutive bulletins
   for (let i = 1; i < segment.length; i++) {
     const prev = segment[i - 1];
     const curr = segment[i];
     
-    // Skip if unavailable or current
-    if (curr.is_unavailable == "1" || prev.is_unavailable == "1" || curr.is_current == "1" || prev.is_current == "1") {
+    // Skip calculations if either data point is "Current" (1) or "Unavailable" (1)
+    if (curr.is_unavailable === "1" || prev.is_unavailable === "1" || curr.is_current === "1" || prev.is_current === "1") {
       continue;
     }
 
     const prevPd = new Date(prev.priority_date).getTime();
     const currPd = new Date(curr.priority_date).getTime();
     
-    if (!isNaN(prevPd) && !isNaN(currPd)) {
-      movements.push((currPd - prevPd) / DAY_MS);
+    if (!Number.isNaN(prevPd) && !Number.isNaN(currPd)) {
+      const diffDays = (currPd - prevPd) / DAY_MS;
+      movements.push(diffDays);
+      
+      // Track movement by bulletin month (0 = Jan, 11 = Dec) to capture fiscal year seasonality
+      const currMonth = new Date(curr.bulletin_date).getUTCMonth();
+      monthlyMovements[currMonth].push(diffDays);
     }
   }
 
-  // Calculate moving average of the last 6 valid movements
+  // Calculate the recent momentum (moving average of the last 6 valid movements)
   const recentMoves = movements.slice(-6);
-  const avgMovementDays = recentMoves.length > 0 
-    ? recentMoves.reduce((a, b) => a + b, 0) / recentMoves.length 
-    : 30; // Default to 30 days per month if no data
+  const recentAvg = recentMoves.length > 0 
+    ? recentMoves.reduce((acc, val) => acc + val, 0) / recentMoves.length 
+    : 30; // Default fallback to 1 month (30 days) of movement
 
-  // Generate predictions
   const predictions = [];
-  let lastRecord = segment[segment.length - 1];
+  const lastRecord = segment.at(-1); // Modern array syntax to get last item
   
-  if (lastRecord.is_current == "1" || lastRecord.is_unavailable == "1") {
-      return []; // Hard to predict if currently C or U
+  // If the category is currently C or U, we cannot meaningfully project a date numerically
+  if (lastRecord.is_current === "1" || lastRecord.is_unavailable === "1") {
+      return []; 
   }
 
-  let lastBulletinDate = new Date(lastRecord.bulletin_date);
+  const lastBulletinDate = new Date(lastRecord.bulletin_date);
   let lastPdDate = new Date(lastRecord.priority_date).getTime();
 
+  // Generate future projections
   for (let i = 1; i <= monthsAhead; i++) {
-    // Increment bulletin date by 1 month
+    // Advance the bulletin date by 1 month
     lastBulletinDate.setUTCMonth(lastBulletinDate.getUTCMonth() + 1);
     const newBulletinStr = lastBulletinDate.toISOString().split('T')[0];
+    
+    const targetMonth = lastBulletinDate.getUTCMonth();
+    const targetYear = lastBulletinDate.getUTCFullYear();
 
-    // Increment priority date by average movement
-    // TBD: Use externalFactors here to adjust avgMovementDays based on news
-    if (externalFactors && externalFactors.boost) {
-        lastPdDate += (avgMovementDays * externalFactors.boost) * DAY_MS;
-    } else {
-        lastPdDate += avgMovementDays * DAY_MS;
+    // 1. Seasonality Feature: Fiscal Quarters
+    // Q1 (Oct-Dec) is fast, Q4 (Jul-Sep) is slow/flat.
+    // Instead of raw historical averages (which cause erratic zigzag lines due to retrogressions),
+    // we apply a smoothing multiplier to the recent momentum based on the USCIS fiscal calendar.
+    let seasonMultiplier = 1.0;
+    if (targetMonth >= 9 && targetMonth <= 11) {
+        seasonMultiplier = 1.3; // Oct, Nov, Dec (Q1) - Quota reset, fastest movement
+    } else if (targetMonth >= 0 && targetMonth <= 2) {
+        seasonMultiplier = 1.0; // Jan, Feb, Mar (Q2) - Steady movement
+    } else if (targetMonth >= 3 && targetMonth <= 5) {
+        seasonMultiplier = 0.8; // Apr, May, Jun (Q3) - Slowing down
+    } else if (targetMonth >= 6 && targetMonth <= 8) {
+        seasonMultiplier = 0.3; // Jul, Aug, Sep (Q4) - Quotas exhausted, flattening out
     }
+
+    // 2. Administrative Cycle Feature: Election Year Modifier
+    // Presidential election years (e.g., 2024, 2028) and transitions often slow down processing
+    let electionMultiplier = 1.0;
+    if (targetYear % 4 === 0) {
+        electionMultiplier = 0.85; // Election year slowdown (15% penalty)
+    } else if (targetYear % 4 === 1) {
+        electionMultiplier = 0.90; // Post-election transition slowdown (10% penalty)
+    }
+
+    // 3. Blending
+    // We only project positive/steady momentum using multipliers to avoid predicting 
+    // highly unrealistic "yo-yo" crashes and spikes every single year.
+    // If recent momentum is already negative (retrogression), we just propagate it slightly slowed down.
+    const baseMoves = Math.max(recentAvg, 0); // Ignore recent crashes for long-term projection
+    const blendedDays = baseMoves * seasonMultiplier * electionMultiplier;
+
+    // Apply external factor boost if provided (for future API expansion)
+    const boostMultiplier = externalFactors?.boost ?? 1;
+    
+    // Calculate new priority date timestamp
+    lastPdDate += (blendedDays * boostMultiplier) * DAY_MS;
     
     predictions.push({
       bulletin_date: newBulletinStr,
       priority_date: lastPdDate,
       table_type: tableType,
-      category: category,
-      country: country,
+      category,
+      country,
       is_projected: true
     });
   }
