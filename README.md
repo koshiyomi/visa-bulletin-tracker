@@ -7,7 +7,7 @@ The dataset covers **13,000+ records** across **148 monthly bulletins** from May
 
 This project is a 100% static site that does not require a database server.
 
-- **Frontend:** A simple `dashboard.html` that uses JavaScript (`fetch()`) and Chart.js to render data.
+- **Frontend:** A simple `index.html` that uses JavaScript (`fetch()`) and Chart.js to render data.
 - **Backend/Data Pipeline:** A Python script (`update_data.py`) acts as a build step. It scrapes the latest bulletin from travel.state.gov, parses the tables, calculates metrics (like month-over-month movement), and exports static JSON/CSV files.
 - **Automation:** A GitHub Actions workflow (`.github/workflows/update-bulletin.yml`) runs weekly to automatically run the Python script, scrape only the *newest* unseen bulletins (to avoid rate limits), and commit the updated data directly to the repository.
 
@@ -37,7 +37,7 @@ python3 update_data.py
 # Run a local web server to view the dashboard
 python3 -m http.server
 ```
-Then open `http://localhost:8000/dashboard.html` in your browser.
+Then open `http://localhost:8000/index.html` (or just `http://localhost:8000/`) in your browser.
 
 ## Customizing the Dashboard
 
