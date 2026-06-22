@@ -98,6 +98,7 @@ function processInitialData() {
 
   document.getElementById('countrySelect').addEventListener('change', updateChart);
   document.getElementById('tableSelect').addEventListener('change', updateChart);
+  document.getElementById('yAxisSelect').addEventListener('change', updateChart);
 
   document.getElementById('loader').style.display = 'none';
   document.getElementById('dashboard').style.display = 'block';
@@ -111,6 +112,7 @@ function processInitialData() {
 function updateChart() {
   const selectedCountry = document.getElementById('countrySelect').value;
   const selectedTable = document.getElementById('tableSelect').value;
+  const yAxisMetric = document.getElementById('yAxisSelect').value;
   
   const checkboxes = document.querySelectorAll('#categoryCheckboxes input:checked');
   const selectedCats = Array.from(checkboxes).map(cb => cb.value);
@@ -130,11 +132,16 @@ function updateChart() {
               actualRawCategory = rawCat;
               history.forEach(row => {
                   if (row.is_current === "1" || row.is_unavailable === "1") return;
+                  const bd = new Date(row.bulletin_date).getTime();
                   const pd = new Date(row.priority_date).getTime();
                   if (!isNaN(pd)) {
+                      let yVal = pd;
+                      if (yAxisMetric === 'wait_time') {
+                          yVal = (bd - pd) / (1000 * 60 * 60 * 24 * 365.25);
+                      }
                       dataPoints.push({
-                          x: new Date(row.bulletin_date).getTime(),
-                          y: pd
+                          x: bd,
+                          y: yVal
                       });
                   }
               });
@@ -161,9 +168,15 @@ function updateChart() {
               if (dataPoints.length > 0) projPoints.push(dataPoints[dataPoints.length - 1]);
               
               predictions.forEach(p => {
+                  const p_bd = new Date(p.bulletin_date).getTime();
+                  const p_pd = p.priority_date;
+                  let yVal = p_pd;
+                  if (yAxisMetric === 'wait_time') {
+                      yVal = (p_bd - p_pd) / (1000 * 60 * 60 * 24 * 365.25);
+                  }
                   projPoints.push({
-                      x: new Date(p.bulletin_date).getTime(),
-                      y: p.priority_date
+                      x: p_bd,
+                      y: yVal
                   });
               });
 
@@ -182,10 +195,11 @@ function updateChart() {
       }
   });
 
-  renderChart(datasets);
+  renderChart(datasets, yAxisMetric);
 }
 
-function renderChart(datasets) {
+function renderChart(datasets, yAxisMetric) {
+    const isWaitTime = yAxisMetric === 'wait_time';
     const ctx = document.getElementById('pdChart').getContext('2d');
     
     if (chartInstance) {
@@ -212,9 +226,9 @@ function renderChart(datasets) {
                     ticks: { color: '#94a3b8' }
                 },
                 y: {
-                    type: 'time',
-                    time: { unit: 'month' },
-                    title: { display: true, text: 'Priority Date', color: '#94a3b8' },
+                    type: isWaitTime ? 'linear' : 'time',
+                    time: isWaitTime ? undefined : { unit: 'month' },
+                    title: { display: true, text: isWaitTime ? 'Wait Time (Years)' : 'Priority Date', color: '#94a3b8' },
                     grid: { color: 'rgba(255,255,255,0.1)' },
                     ticks: { color: '#94a3b8' }
                 }
@@ -234,7 +248,11 @@ function renderChart(datasets) {
                             let label = context.dataset.label || '';
                             if (label) label += ': ';
                             if (context.parsed.y !== null) {
-                                label += new Date(context.parsed.y).toISOString().split('T')[0];
+                                if (isWaitTime) {
+                                    label += context.parsed.y.toFixed(2) + ' Years';
+                                } else {
+                                    label += new Date(context.parsed.y).toISOString().split('T')[0];
+                                }
                             }
                             return label;
                         }
