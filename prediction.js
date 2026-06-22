@@ -63,11 +63,28 @@ window.predictFutureCutoff = (history, tableType, category, country, monthsAhead
       return []; 
   }
 
+  // Calculate average wait time to determine projection length
+  let totalWaitDays = 0;
+  let validWaitCount = 0;
+  segment.forEach(({ bulletin_date, priority_date, is_current, is_unavailable }) => {
+      if (is_current !== "1" && is_unavailable !== "1") {
+          const bd = new Date(bulletin_date).getTime();
+          const pd = new Date(priority_date).getTime();
+          if (!Number.isNaN(pd) && !Number.isNaN(bd)) {
+              totalWaitDays += (bd - pd) / DAY_MS;
+              validWaitCount++;
+          }
+      }
+  });
+  
+  const avgWaitMonths = validWaitCount > 0 ? Math.round((totalWaitDays / validWaitCount) / 30.44) : 12;
+  const targetMonthsAhead = Math.max(12, avgWaitMonths);
+
   const lastBulletinDate = new Date(lastRecord.bulletin_date);
   let lastPdDate = new Date(lastRecord.priority_date).getTime();
 
   // Generate future projections
-  for (let i = 1; i <= monthsAhead; i++) {
+  for (let i = 1; i <= targetMonthsAhead; i++) {
     // Advance the bulletin date by 1 month
     lastBulletinDate.setUTCMonth(lastBulletinDate.getUTCMonth() + 1);
     const newBulletinStr = lastBulletinDate.toISOString().split('T')[0];

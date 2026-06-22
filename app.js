@@ -216,7 +216,7 @@ const updateChart = () => {
                   projPoints.push({ x: p_bd, y: yVal });
               });
 
-              datasets.push({
+                  datasets.push({
                   label: `${uiCat} (Projected)`,
                   data: projPoints,
                   borderColor: color,
@@ -225,7 +225,13 @@ const updateChart = () => {
                   fill: false,
                   tension: 0.2,
                   pointRadius: 3,
-                  pointStyle: 'circle'
+                  pointStyle: 'circle',
+                  segment: {
+                      borderColor: ctx => ctx.p0DataIndex >= 12 ? color + '40' : color,
+                      borderDash: ctx => [5, 5],
+                  },
+                  pointBorderColor: ctx => ctx.dataIndex > 12 ? color + '40' : color,
+                  pointBackgroundColor: ctx => ctx.dataIndex > 12 ? color + '40' : color,
               });
           }
       }
@@ -275,7 +281,12 @@ const renderChart = (datasets, yAxisMetric) => {
             },
             plugins: {
                 legend: {
-                    labels: { color: '#f8fafc' }
+                    labels: { 
+                        color: '#f8fafc',
+                        filter: function(item, chart) {
+                            return !item.text.includes('(Projected)');
+                        }
+                    }
                 },
                 tooltip: {
                     backgroundColor: 'rgba(15, 23, 42, 0.9)',
