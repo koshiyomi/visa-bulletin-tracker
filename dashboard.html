@@ -504,133 +504,12 @@
 </div>
 
 <script>
-// ─── DATA (EB-2 China, Oct 2015 – Mar 2026) ─────────────
-// [bulletin_date, table_type, priority_date]
-var TABLE_A_RAW = [
-  ["2015-10","2012-01-01"],["2015-11","2012-02-01"],["2015-12","2012-02-01"],
-  ["2016-01","2012-02-01"],["2016-02","2012-03-01"],["2016-03","2012-08-01"],
-  ["2016-04","2012-09-01"],["2016-05","2012-09-01"],["2016-06","2010-01-01"],
-  ["2016-07","2010-01-01"],["2016-08","2010-01-01"],["2016-09","2010-01-01"],
-  ["2016-10","2012-02-15"],["2016-11","2012-07-15"],["2016-12","2012-09-22"],
-  ["2017-01","2012-10-15"],["2017-02","2012-11-15"],["2017-03","2012-12-15"],
-  ["2017-04","2013-01-15"],["2017-05","2013-02-08"],["2017-06","2013-03-01"],
-  ["2017-07","2013-03-22"],["2017-08","2013-04-22"],["2017-09","2013-05-15"],
-  ["2017-10","2013-05-22"],["2017-11","2013-06-15"],["2017-12","2013-07-01"],
-  ["2018-01","2013-08-08"],["2018-02","2013-10-01"],["2018-03","2013-12-08"],
-  ["2018-04","2014-08-01"],["2018-05","2014-09-01"],["2018-06","2014-09-01"],
-  ["2018-07","2015-01-01"],["2018-08","2015-03-01"],["2018-09","2013-01-01"],
-  ["2018-10","2015-04-01"],["2018-11","2015-05-15"],["2018-12","2015-07-01"],
-  ["2019-01","2015-08-01"],["2019-02","2015-10-01"],["2019-03","2016-01-01"],
-  ["2019-04","2016-04-01"],["2019-05","2016-05-15"],["2019-06","2016-08-01"],
-  ["2019-07","2016-11-01"],["2019-08","2017-01-01"],["2019-09","2017-01-01"],
-  ["2019-10","2015-01-01"],["2019-11","2015-03-15"],["2019-12","2015-06-22"],
-  ["2020-01","2015-07-01"],["2020-02","2015-07-15"],["2020-03","2015-08-15"],
-  ["2020-04","2015-09-01"],["2020-05","2015-10-01"],["2020-06","2015-11-01"],
-  ["2020-07","2015-11-08"],["2020-08","2016-01-15"],["2020-09","2016-01-15"],
-  ["2020-10","2016-03-01"],["2020-11","2016-04-22"],["2020-12","2016-05-01"],
-  ["2021-01","2016-06-01"],["2021-02","2016-06-15"],["2021-03","2016-07-15"],
-  ["2021-04","2016-09-01"],["2021-05","2016-12-01"],["2021-06","2017-05-01"],
-  ["2021-07","2017-12-01"],["2021-08","2018-04-01"],["2021-09","2018-07-01"],
-  ["2021-10","2018-07-01"],["2021-11","2018-11-15"],["2021-12","2019-01-01"],
-  ["2022-01","2019-01-22"],["2022-02","2019-03-01"],["2022-03","2019-03-01"],
-  ["2022-04","2019-03-01"],["2022-05","2019-03-01"],["2022-06","2019-03-01"],
-  ["2022-07","2019-04-01"],["2022-08","2019-04-01"],["2022-09","2019-04-01"],
-  ["2022-10","2019-06-08"],["2022-11","2019-06-08"],["2022-12","2019-06-08"],
-  ["2023-01","2019-06-08"],["2023-02","2019-06-08"],["2023-03","2019-06-08"],
-  ["2023-04","2019-06-08"],["2023-05","2019-06-08"],["2023-06","2019-06-08"],
-  ["2023-07","2019-06-08"],["2023-08","2019-07-08"],["2023-09","2019-07-08"],
-  ["2023-10","2019-10-01"],["2023-11","2019-10-01"],["2023-12","2019-10-22"],
-  ["2024-01","2020-01-01"],["2024-02","2020-01-01"],["2024-03","2020-01-01"],
-  ["2024-04","2020-02-01"],["2024-05","2020-02-01"],["2024-06","2020-02-01"],
-  ["2024-07","2020-03-01"],["2024-08","2020-03-01"],["2024-09","2020-03-01"],
-  ["2024-10","2020-03-22"],["2024-11","2020-03-22"],["2024-12","2020-03-22"],
-  ["2025-01","2020-10-01"],["2025-02","2020-04-22"],["2025-03","2020-05-08"],
-  ["2025-04","2020-10-01"],["2025-05","2020-10-01"],["2025-06","2020-12-01"],
-  ["2025-07","2020-12-15"],["2025-08","2020-12-15"],["2025-09","2020-12-15"],
-  ["2025-10","2021-04-01"],["2025-11","2021-04-01"],["2025-12","2021-06-01"],
-  ["2026-01","2021-09-01"],["2026-02","2021-09-01"],["2026-03","2021-09-01"]
-];
+// Data is loaded dynamically via fetch()
+var TABLE_A_RAW = [];
+var TABLE_B_RAW = [];
+var MOVEMENT_A = [];
+var YEARLY = [];
 
-var TABLE_B_RAW = [
-  ["2015-10","2013-01-01"],["2015-11","2013-01-01"],["2015-12","2013-01-01"],
-  ["2016-01","2013-01-01"],["2016-02","2013-01-01"],["2016-03","2013-06-01"],
-  ["2016-04","2013-06-01"],["2016-05","2013-06-01"],["2016-06","2013-06-01"],
-  ["2016-07","2013-06-01"],["2016-08","2013-06-01"],["2016-09","2013-06-01"],
-  ["2016-10","2013-03-01"],["2016-11","2013-03-01"],["2016-12","2013-03-01"],
-  ["2017-01","2013-03-01"],["2017-02","2013-03-01"],["2017-03","2013-03-01"],
-  ["2017-04","2013-03-01"],["2017-05","2013-10-01"],["2017-06","2013-10-01"],
-  ["2017-07","2013-10-01"],["2017-08","2013-10-01"],["2017-09","2013-10-01"],
-  ["2017-10","2013-11-15"],["2017-11","2013-11-15"],["2017-12","2013-11-15"],
-  ["2018-01","2013-11-15"],["2018-02","2014-11-15"],["2018-03","2015-02-01"],
-  ["2018-04","2015-02-01"],["2018-05","2015-02-01"],["2018-06","2015-02-01"],
-  ["2018-07","2015-04-01"],["2018-08","2015-04-01"],["2018-09","2015-04-01"],
-  ["2018-10","2015-06-15"],["2018-11","2015-06-15"],["2018-12","2015-09-08"],
-  ["2019-01","2015-09-08"],["2019-02","2015-11-01"],["2019-03","2016-05-01"],
-  ["2019-04","2016-07-01"],["2019-05","2016-09-01"],["2019-06","2016-11-01"],
-  ["2019-07","2017-02-01"],["2019-08","2017-02-01"],["2019-09","2017-06-01"],
-  ["2019-10","2016-08-01"],["2019-11","2016-08-01"],["2019-12","2016-08-01"],
-  ["2020-01","2016-08-01"],["2020-02","2016-08-01"],["2020-03","2016-08-01"],
-  ["2020-04","2016-08-01"],["2020-05","2016-08-01"],["2020-06","2016-08-01"],
-  ["2020-07","2016-08-01"],["2020-08","2016-08-01"],["2020-09","2016-08-01"],
-  ["2020-10","2016-10-01"],["2020-11","2016-10-01"],["2020-12","2016-10-01"],
-  ["2021-01","2016-10-01"],["2021-02","2016-10-01"],["2021-03","2016-10-01"],
-  ["2021-04","2017-01-01"],["2021-05","2017-07-01"],["2021-06","2018-01-01"],
-  ["2021-07","2018-07-01"],["2021-08","2018-07-01"],["2021-09","2018-09-01"],
-  ["2021-10","2018-09-01"],["2021-11","2019-02-01"],["2021-12","2019-04-01"],
-  ["2022-01","2019-04-01"],["2022-02","2019-04-01"],["2022-03","2019-04-01"],
-  ["2022-04","2019-04-01"],["2022-05","2019-04-01"],["2022-06","2019-04-01"],
-  ["2022-07","2019-05-01"],["2022-08","2019-05-01"],["2022-09","2019-05-01"],
-  ["2022-10","2019-07-08"],["2022-11","2019-07-08"],["2022-12","2019-07-08"],
-  ["2023-01","2019-07-08"],["2023-02","2019-07-08"],["2023-03","2019-07-08"],
-  ["2023-04","2019-07-08"],["2023-05","2019-07-08"],["2023-06","2019-07-08"],
-  ["2023-07","2019-07-08"],["2023-08","2019-10-08"],["2023-09","2019-10-08"],
-  ["2023-10","2020-01-01"],["2023-11","2020-01-01"],["2023-12","2020-01-01"],
-  ["2024-01","2020-06-01"],["2024-02","2020-06-01"],["2024-03","2020-06-01"],
-  ["2024-04","2020-06-01"],["2024-05","2020-06-01"],["2024-06","2020-06-01"],
-  ["2024-07","2020-06-01"],["2024-08","2020-06-01"],["2024-09","2020-06-01"],
-  ["2024-10","2020-10-01"],["2024-11","2020-10-01"],["2024-12","2020-10-01"],
-  ["2025-02","2020-10-01"],["2025-03","2020-10-01"],["2025-04","2020-11-01"],
-  ["2025-05","2020-11-01"],["2025-06","2021-01-01"],["2025-07","2021-01-01"],
-  ["2025-08","2021-01-01"],["2025-09","2021-01-01"],["2025-10","2021-12-01"],
-  ["2025-11","2021-12-01"],["2025-12","2021-12-01"],["2026-01","2022-01-01"],
-  ["2026-02","2022-01-01"],["2026-03","2022-01-01"]
-];
-
-var MOVEMENT_A = [
-  {month:"2024-04",days:31},{month:"2024-05",days:0},{month:"2024-06",days:0},
-  {month:"2024-07",days:29},{month:"2024-08",days:0},{month:"2024-09",days:0},
-  {month:"2024-10",days:21},{month:"2024-11",days:0},{month:"2024-12",days:0},
-  {month:"2025-01",days:193},{month:"2025-02",days:-162},{month:"2025-03",days:16},
-  {month:"2025-04",days:146},{month:"2025-05",days:0},{month:"2025-06",days:61},
-  {month:"2025-07",days:14},{month:"2025-08",days:0},{month:"2025-09",days:0},
-  {month:"2025-10",days:107},{month:"2025-11",days:0},{month:"2025-12",days:61},
-  {month:"2026-01",days:92},{month:"2026-02",days:0},{month:"2026-03",days:0}
-];
-
-var YEARLY = [
-  {year:"2026",table:"A",avg:30.7,retro:0,adv:1},
-  {year:"2026",table:"B",avg:10.3,retro:0,adv:1},
-  {year:"2025",table:"A",avg:36.3,retro:1,adv:7},
-  {year:"2025",table:"B",avg:42.6,retro:0,adv:3},
-  {year:"2024",table:"A",avg:12.7,retro:0,adv:4},
-  {year:"2024",table:"B",avg:22.8,retro:0,adv:2},
-  {year:"2023",table:"A",avg:11.3,retro:0,adv:3},
-  {year:"2023",table:"B",avg:14.8,retro:0,adv:2},
-  {year:"2022",table:"A",avg:13.2,retro:0,adv:4},
-  {year:"2022",table:"B",avg:8.2,retro:0,adv:2},
-  {year:"2021",table:"A",avg:81.3,retro:0,adv:11},
-  {year:"2021",table:"B",avg:76.0,retro:0,adv:7},
-  {year:"2020",table:"A",avg:26.2,retro:0,adv:11},
-  {year:"2020",table:"B",avg:5.1,retro:0,adv:1},
-  {year:"2019",table:"A",avg:-0.8,retro:1,adv:10},
-  {year:"2019",table:"B",avg:27.3,retro:1,adv:7},
-  {year:"2018",table:"A",avg:60.8,retro:1,adv:10},
-  {year:"2018",table:"B",avg:55.2,retro:0,adv:5},
-  {year:"2017",table:"A",avg:23.5,retro:0,adv:12},
-  {year:"2017",table:"B",avg:21.6,retro:0,adv:2},
-  {year:"2016",table:"A",avg:19.5,retro:1,adv:6},
-  {year:"2016",table:"B",avg:4.9,retro:1,adv:1}
-];
 
 // Priority date: set via URL param ?pd=YYYY-MM-DD (default: example date)
 var urlParams = new URLSearchParams(window.location.search);
@@ -639,7 +518,7 @@ var MY_PD_TS = new Date(PD_STRING).getTime();
 var MY_PD_LABEL = fmtDate(PD_STRING);
 
 // Dynamic status banner
-(function() {
+function updateStatusBanner() {
   var lastA = TABLE_A_RAW[TABLE_A_RAW.length - 1];
   var lastB = TABLE_B_RAW[TABLE_B_RAW.length - 1];
   var cutA = new Date(lastA[1]).getTime();
@@ -667,7 +546,7 @@ var MY_PD_LABEL = fmtDate(PD_STRING);
   if (!isCurrentB) txt += ' (' + Math.round((MY_PD_TS - cutB) / 86400000) + ' days away)';
   txt += ' \u2014 As of ' + bMonth + ' bulletin';
   detail.textContent = txt;
-})();
+}
 
 // ─── Helpers ───
 var MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -707,7 +586,7 @@ var tooltipStyle = {
 // ─── 0. Wait Time to Become Current ───
 // For each bulletin month: wait = bulletin_date - cutoff_date
 // This shows how long applicants becoming current that month actually waited.
-(function() {
+function initWaitChart() {
   var DAY = 86400000;
 
   function addMonths(ym, n) {
@@ -851,251 +730,284 @@ var tooltipStyle = {
       }
     }
   });
-})();
+}
 
-// ─── 1. Timeline Chart (category x-axis) ───
-new Chart(document.getElementById('timelineChart').getContext('2d'), {
-  type: 'line',
-  data: {
-    labels: labelsFmt,
-    datasets: [
-      {
-        label: 'Table A - Final Action',
-        data: TABLE_A_RAW.map(function(r) { return pdTimestamp(r[1]); }),
-        borderColor: '#C45A3C',
-        backgroundColor: 'rgba(196,90,60,0.08)',
-        fill: false,
-        borderWidth: 2.5,
-        pointRadius: 0,
-        pointHoverRadius: 5,
-        pointHoverBackgroundColor: '#C45A3C',
-        tension: 0.1
+// ─── 1. Timeline Chart ───
+function initTimelineChart() {
+  new Chart(document.getElementById('timelineChart').getContext('2d'), {
+    type: 'line',
+    data: {
+      labels: labelsFmt,
+      datasets: [
+        {
+          label: 'Table A - Final Action',
+          data: TABLE_A_RAW.map(function(r) { return pdTimestamp(r[1]); }),
+          borderColor: '#C45A3C',
+          backgroundColor: 'rgba(196,90,60,0.08)',
+          fill: false,
+          borderWidth: 2.5,
+          pointRadius: 0,
+          pointHoverRadius: 5,
+          pointHoverBackgroundColor: '#C45A3C',
+          tension: 0.1
+        },
+        {
+          label: 'Table B - Dates for Filing',
+          data: labels.map(function(lbl) {
+            var pd = tableBMap[lbl];
+            return pd ? pdTimestamp(pd) : null;
+          }),
+          borderColor: '#D4A937',
+          backgroundColor: 'rgba(212,169,55,0.08)',
+          fill: false,
+          borderWidth: 2.5,
+          pointRadius: 0,
+          pointHoverRadius: 5,
+          pointHoverBackgroundColor: '#D4A937',
+          tension: 0.1,
+          spanGaps: true
+        },
+        {
+          label: 'Priority Date (' + fmtLabel(PD_STRING.slice(0,7)) + ')',
+          data: labels.map(function() { return MY_PD_TS; }),
+          borderColor: '#7A8B6F',
+          borderDash: [8, 4],
+          borderWidth: 2,
+          pointRadius: 0,
+          pointHoverRadius: 0,
+          fill: false
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        tooltip: Object.assign({}, tooltipStyle, {
+          callbacks: {
+            label: function(item) {
+              if (item.datasetIndex === 2) return 'Priority Date: ' + MY_PD_LABEL;
+              if (item.parsed.y == null) return '';
+              return item.dataset.label + ': ' + fmtDate(new Date(item.parsed.y).toISOString().slice(0,10));
+            }
+          }
+        })
       },
-      {
-        label: 'Table B - Dates for Filing',
-        data: labels.map(function(lbl) {
-          var pd = tableBMap[lbl];
-          return pd ? pdTimestamp(pd) : null;
+      scales: {
+        x: {
+          grid: { color: 'rgba(92,61,46,0.15)' },
+          ticks: {
+            color: '#7A5544',
+            maxRotation: 0,
+            autoSkip: true,
+            maxTicksLimit: 12,
+            font: { size: 10 }
+          }
+        },
+        y: {
+          type: 'linear',
+          grid: { color: 'rgba(92,61,46,0.15)' },
+          ticks: {
+            color: '#7A5544',
+            callback: function(val) {
+              var d = new Date(val);
+              return MONTHS[d.getUTCMonth()] + " '" + String(d.getUTCFullYear()).slice(2);
+            }
+          }
+        }
+      }
+    }
+  });
+}
+
+// ─── 2. Monthly Movement Chart ───
+function initMovementChart() {
+  new Chart(document.getElementById('movementChart').getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels: MOVEMENT_A.map(function(d) { return d.month; }),
+      datasets: [{
+        label: 'Days Moved',
+        data: MOVEMENT_A.map(function(d) { return d.days; }),
+        backgroundColor: MOVEMENT_A.map(function(d) {
+          if (d.days > 0) return 'rgba(90,138,90,0.8)';
+          if (d.days < 0) return 'rgba(179,58,58,0.8)';
+          return 'rgba(92,61,46,0.3)';
         }),
-        borderColor: '#D4A937',
-        backgroundColor: 'rgba(212,169,55,0.08)',
-        fill: false,
-        borderWidth: 2.5,
-        pointRadius: 0,
-        pointHoverRadius: 5,
-        pointHoverBackgroundColor: '#D4A937',
-        tension: 0.1,
-        spanGaps: true
-      },
-      {
-        label: 'Priority Date (' + fmtLabel(PD_STRING.slice(0,7)) + ')',
-        data: labels.map(function() { return MY_PD_TS; }),
-        borderColor: '#7A8B6F',
-        borderDash: [8, 4],
-        borderWidth: 2,
-        pointRadius: 0,
-        pointHoverRadius: 0,
-        fill: false
-      }
-    ]
-  },
-  options: {
-    responsive: true,
-    maintainAspectRatio: false,
-    interaction: { mode: 'index', intersect: false },
-    plugins: {
-      legend: { display: false },
-      tooltip: Object.assign({}, tooltipStyle, {
-        callbacks: {
-          label: function(item) {
-            if (item.datasetIndex === 2) return 'Priority Date: ' + MY_PD_LABEL;
-            if (item.parsed.y == null) return '';
-            return item.dataset.label + ': ' + fmtDate(new Date(item.parsed.y).toISOString().slice(0,10));
-          }
-        }
-      })
+        borderColor: MOVEMENT_A.map(function(d) {
+          if (d.days > 0) return '#5A8A5A';
+          if (d.days < 0) return '#B33A3A';
+          return 'rgba(92,61,46,0.5)';
+        }),
+        borderWidth: 1,
+        borderRadius: 3
+      }]
     },
-    scales: {
-      x: {
-        grid: { color: 'rgba(92,61,46,0.15)' },
-        ticks: {
-          color: '#7A5544',
-          maxRotation: 0,
-          autoSkip: true,
-          maxTicksLimit: 12,
-          font: { size: 10 }
-        }
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: Object.assign({}, tooltipStyle, {
+          callbacks: {
+            label: function(item) {
+              var v = item.parsed.y;
+              if (v > 0) return '+' + v + ' days advanced';
+              if (v < 0) return v + ' days retrogressed';
+              return 'No movement';
+            }
+          }
+        })
       },
-      y: {
-        type: 'linear',
-        grid: { color: 'rgba(92,61,46,0.15)' },
-        ticks: {
-          color: '#7A5544',
-          callback: function(val) {
-            var d = new Date(val);
-            return MONTHS[d.getUTCMonth()] + " '" + String(d.getUTCFullYear()).slice(2);
+      scales: {
+        x: {
+          grid: { display: false },
+          ticks: { color: '#7A5544', maxRotation: 45, font: { size: 9 } }
+        },
+        y: {
+          grid: { color: 'rgba(92,61,46,0.15)' },
+          ticks: {
+            color: '#7A5544',
+            callback: function(v) { return v > 0 ? '+' + v + 'd' : v + 'd'; }
           }
         }
       }
     }
-  }
-});
+  });
+}
 
-// ─── 2. Monthly Movement Bar Chart ───
-new Chart(document.getElementById('movementChart').getContext('2d'), {
-  type: 'bar',
-  data: {
-    labels: MOVEMENT_A.map(function(d) { return d.month; }),
-    datasets: [{
-      label: 'Days Moved',
-      data: MOVEMENT_A.map(function(d) { return d.days; }),
-      backgroundColor: MOVEMENT_A.map(function(d) {
-        if (d.days > 0) return 'rgba(90,138,90,0.8)';
-        if (d.days < 0) return 'rgba(179,58,58,0.8)';
-        return 'rgba(92,61,46,0.3)';
-      }),
-      borderColor: MOVEMENT_A.map(function(d) {
-        if (d.days > 0) return '#5A8A5A';
-        if (d.days < 0) return '#B33A3A';
-        return 'rgba(92,61,46,0.5)';
-      }),
-      borderWidth: 1,
-      borderRadius: 3
-    }]
-  },
-  options: {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: { display: false },
-      tooltip: Object.assign({}, tooltipStyle, {
-        callbacks: {
-          label: function(item) {
-            var v = item.parsed.y;
-            if (v > 0) return '+' + v + ' days advanced';
-            if (v < 0) return v + ' days retrogressed';
-            return 'No movement';
-          }
-        }
-      })
-    },
-    scales: {
-      x: {
-        grid: { display: false },
-        ticks: { color: '#7A5544', maxRotation: 45, font: { size: 9 } }
-      },
-      y: {
-        grid: { color: 'rgba(92,61,46,0.15)' },
-        ticks: {
-          color: '#7A5544',
-          callback: function(v) { return v > 0 ? '+' + v + 'd' : v + 'd'; }
-        }
-      }
-    }
-  }
-});
-
-// ─── 3. Yearly Summary Table (safe DOM construction) ───
-(function() {
+// ─── 3. Yearly Summary Table ───
+function initYearlyTable() {
   var tbody = document.getElementById('yearlyBody');
   YEARLY.forEach(function(row) {
     var tr = document.createElement('tr');
-
     var tdYear = document.createElement('td');
     tdYear.textContent = row.year;
     tr.appendChild(tdYear);
-
     var tdTable = document.createElement('td');
     tdTable.textContent = row.table === 'A' ? 'Final Action' : 'Filing';
     tdTable.style.color = row.table === 'A' ? '#C45A3C' : '#D4A937';
     tr.appendChild(tdTable);
-
     var tdAvg = document.createElement('td');
     tdAvg.textContent = (row.avg > 0 ? '+' : '') + row.avg.toFixed(1);
     if (row.avg < 0) tdAvg.className = 'retro';
     else if (row.avg > 30) tdAvg.className = 'advance';
     tr.appendChild(tdAvg);
-
     var tdRetro = document.createElement('td');
     tdRetro.textContent = row.retro;
     if (row.retro > 0) tdRetro.className = 'retro';
     tr.appendChild(tdRetro);
-
     var tdAdv = document.createElement('td');
     tdAdv.textContent = row.adv;
     tr.appendChild(tdAdv);
-
     tbody.appendChild(tr);
   });
-})();
+}
 
-// ─── 4. Table A vs B Gap Chart (category x-axis) ───
-var gapLabels = [];
-var gapValues = [];
-TABLE_A_RAW.forEach(function(aRow) {
-  var bPd = tableBMap[aRow[0]];
-  if (bPd) {
-    gapLabels.push(fmtLabel(aRow[0]));
-    gapValues.push(Math.round((new Date(bPd) - new Date(aRow[1])) / (1000*60*60*24)));
-  }
-});
-
-new Chart(document.getElementById('gapChart').getContext('2d'), {
-  type: 'line',
-  data: {
-    labels: gapLabels,
-    datasets: [{
-      label: 'Gap (Table B - Table A)',
-      data: gapValues,
-      borderColor: '#D4A937',
-      backgroundColor: 'rgba(212,169,55,0.12)',
-      fill: true,
-      borderWidth: 2,
-      pointRadius: 0,
-      pointHoverRadius: 4,
-      tension: 0.2
-    }]
-  },
-  options: {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: { display: false },
-      tooltip: Object.assign({}, tooltipStyle, {
-        callbacks: {
-          label: function(item) {
-            return item.parsed.y + ' days gap between Table B and Table A';
-          }
-        }
-      })
+// ─── 4. Table A vs Table B Gap Chart ───
+function initGapChart() {
+  var gapLabels = [];
+  var gapValues = [];
+  TABLE_A_RAW.forEach(function(aRow) {
+    var bPd = tableBMap[aRow[0]];
+    if (bPd) {
+      gapLabels.push(fmtLabel(aRow[0]));
+      gapValues.push(Math.round((new Date(bPd) - new Date(aRow[1])) / (1000*60*60*24)));
+    }
+  });
+  new Chart(document.getElementById('gapChart').getContext('2d'), {
+    type: 'line',
+    data: {
+      labels: gapLabels,
+      datasets: [{
+        label: 'Gap (Table B - Table A)',
+        data: gapValues,
+        borderColor: '#D4A937',
+        backgroundColor: 'rgba(212,169,55,0.12)',
+        fill: true,
+        borderWidth: 2,
+        pointRadius: 0,
+        pointHoverRadius: 4,
+        tension: 0.2
+      }]
     },
-    scales: {
-      x: {
-        grid: { color: 'rgba(92,61,46,0.15)' },
-        ticks: {
-          color: '#7A5544',
-          maxRotation: 0,
-          autoSkip: true,
-          maxTicksLimit: 12,
-          font: { size: 10 }
-        }
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: Object.assign({}, tooltipStyle, {
+          callbacks: {
+            label: function(item) {
+              return item.parsed.y + ' days gap between Table B and Table A';
+            }
+          }
+        })
       },
-      y: {
-        grid: { color: 'rgba(92,61,46,0.15)' },
-        ticks: {
-          color: '#7A5544',
-          callback: function(v) { return v + 'd'; }
+      scales: {
+        x: {
+          grid: { color: 'rgba(92,61,46,0.15)' },
+          ticks: {
+            color: '#7A5544',
+            maxRotation: 0,
+            autoSkip: true,
+            maxTicksLimit: 12,
+            font: { size: 10 }
+          }
         },
-        title: {
-          display: true,
-          text: 'Days',
-          color: '#7A5544',
-          font: { size: 10 }
+        y: {
+          grid: { color: 'rgba(92,61,46,0.15)' },
+          ticks: {
+            color: '#7A5544',
+            callback: function(v) { return v + 'd'; }
+          },
+          title: {
+            display: true,
+            text: 'Days',
+            color: '#7A5544',
+            font: { size: 10 }
+          }
         }
       }
     }
-  }
-});
+  });
+}
+
+// ─── Data Loading ───
+fetch('data/dashboard.json')
+  .then(response => response.json())
+  .then(data => {
+    TABLE_A_RAW = data.TABLE_A_RAW;
+    TABLE_B_RAW = data.TABLE_B_RAW;
+    MOVEMENT_A = data.MOVEMENT_A;
+    YEARLY = data.YEARLY;
+
+    document.querySelector('footer p').innerHTML = 
+      `Data: U.S. Department of State Visa Bulletin &middot; ` +
+      `Built with Pandas + Chart.js &middot; ` +
+      `Generated ${data.LAST_UPDATED}`;
+
+    // Update derived arrays
+    labels = TABLE_A_RAW.map(function(r) { return r[0]; });
+    labelsFmt = labels.map(fmtLabel);
+    
+    tableBMap = {};
+    TABLE_B_RAW.forEach(function(r) { tableBMap[r[0]] = r[1]; });
+
+    updateStatusBanner();
+    initWaitChart();
+    initTimelineChart();
+    initMovementChart();
+    initGapChart();
+    initYearlyTable();
+  })
+  .catch(error => {
+    console.error('Error loading data:', error);
+    document.getElementById('statusTitle').textContent = 'Error Loading Data';
+    document.getElementById('statusDetail').textContent = 'Could not fetch dashboard.json. Are you running a local web server?';
+  });
 </script>
 </body>
 </html>

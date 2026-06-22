@@ -1,0 +1,38 @@
+name: Update Visa Bulletin
+
+on:
+  schedule:
+    # Run every Monday at 12:00 UTC
+    - cron: '0 12 * * 1'
+  workflow_dispatch: # Allow manual triggers
+
+jobs:
+  update-data:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run update script
+        run: python update_data.py
+
+      - name: Commit and push changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Auto-update Visa Bulletin data"
+          file_pattern: "data/*.csv data/*.json"
+          branch: main
