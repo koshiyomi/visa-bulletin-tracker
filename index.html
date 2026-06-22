@@ -3,1011 +3,388 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>EB-2 China Visa Bulletin Tracker</title>
+<title>Visa Bulletin Tracker</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<script src="prediction.js"></script>
+
 <style>
   :root {
-    --earth-900: #1A120B;
-    --earth-800: #2D1F16;
-    --earth-700: #3C2A1E;
-    --earth-600: #5C3D2E;
-    --earth-500: #7A5544;
-    --terracotta: #C45A3C;
-    --terracotta-glow: #E8704E;
-    --amber: #D4A937;
-    --amber-light: #F0D078;
-    --sand: #E8D5B5;
-    --sand-light: #F5EDDE;
-    --sage: #7A8B6F;
-    --sage-light: #A4B496;
-    --cream: #FDF8F0;
-    --red-retro: #B33A3A;
-    --green-advance: #5A8A5A;
-    --table-a: #C45A3C;
-    --table-b: #D4A937;
-    --priority-line: #7A8B6F;
+    --md-primary: #6200EE;
+    --md-primary-variant: #3700B3;
+    --md-secondary: #03DAC6;
+    --md-secondary-variant: #018786;
+    --md-background: #F5F5F6;
+    --md-surface: #FFFFFF;
+    --md-error: #B00020;
+    --md-on-primary: #FFFFFF;
+    --md-on-secondary: #000000;
+    --md-on-background: #000000;
+    --md-on-surface: #000000;
+    
+    /* Chart Colors */
+    --chart-c1: #6200EE;
+    --chart-c2: #03DAC6;
+    --chart-c3: #FF0266;
+    --chart-c4: #FFDE03;
+    --chart-c5: #00E676;
+    --chart-c6: #FF9100;
   }
-
-  * { margin: 0; padding: 0; box-sizing: border-box; }
 
   body {
-    background: var(--earth-900);
-    color: var(--sand);
-    font-family: 'IBM Plex Mono', monospace;
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
-
-  body::before {
-    content: '';
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
-    pointer-events: none;
-    z-index: 9999;
-  }
-
-  .dashboard {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 2rem 2rem 4rem;
+    margin: 0;
+    padding: 0;
+    background-color: var(--md-background);
+    color: var(--md-on-background);
+    font-family: 'Roboto', sans-serif;
+    -webkit-font-smoothing: antialiased;
   }
 
   header {
-    text-align: center;
-    padding: 3rem 0 2rem;
-    border-bottom: 1px solid var(--earth-600);
-    margin-bottom: 2.5rem;
-    position: relative;
-  }
-
-  header::after {
-    content: '';
-    position: absolute;
-    bottom: -1px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 120px;
-    height: 3px;
-    background: linear-gradient(90deg, transparent, var(--terracotta), transparent);
-  }
-
-  .title-pre {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.7rem;
-    letter-spacing: 0.35em;
-    text-transform: uppercase;
-    color: var(--earth-500);
-    margin-bottom: 0.5rem;
-  }
-
-  h1 {
-    font-family: 'Fraunces', serif;
-    font-size: clamp(2rem, 5vw, 3.2rem);
-    font-weight: 400;
-    color: var(--sand-light);
-    letter-spacing: -0.02em;
-    line-height: 1.1;
-  }
-
-  h1 span {
-    color: var(--terracotta);
-    font-style: italic;
-    font-weight: 300;
-  }
-
-  .subtitle {
-    font-size: 0.75rem;
-    color: var(--earth-500);
-    margin-top: 0.75rem;
-    letter-spacing: 0.05em;
-  }
-
-  .status-banner {
-    background: linear-gradient(135deg, var(--earth-700) 0%, var(--earth-800) 100%);
-    border: 1px solid var(--sage);
-    border-radius: 12px;
-    padding: 1.75rem 2rem;
-    margin-bottom: 2.5rem;
+    background-color: var(--md-primary);
+    color: var(--md-on-primary);
+    padding: 16px 24px;
+    box-shadow: 0 4px 5px 0 rgba(0,0,0,0.14), 0 1px 10px 0 rgba(0,0,0,0.12), 0 2px 4px -1px rgba(0,0,0,0.20);
     display: flex;
     align-items: center;
-    gap: 1.5rem;
-    position: relative;
-    overflow: hidden;
+    justify-content: space-between;
   }
 
-  .status-banner::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, var(--sage), var(--sage-light), var(--sage));
-  }
-
-  .status-icon {
-    width: 56px;
-    height: 56px;
-    background: var(--sage);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.6rem;
-    flex-shrink: 0;
-    box-shadow: 0 0 20px rgba(122, 139, 111, 0.3);
-    animation: pulse-glow 3s ease-in-out infinite;
-  }
-
-  @keyframes pulse-glow {
-    0%, 100% { box-shadow: 0 0 20px rgba(122, 139, 111, 0.3); }
-    50% { box-shadow: 0 0 30px rgba(122, 139, 111, 0.5); }
-  }
-
-  .status-text h2 {
-    font-family: 'Fraunces', serif;
-    font-size: 1.35rem;
-    font-weight: 400;
-    color: var(--sage-light);
-    margin-bottom: 0.25rem;
-  }
-
-  .status-text p {
-    font-size: 0.72rem;
-    color: var(--earth-500);
-    line-height: 1.5;
-  }
-
-  .status-text .highlight {
-    color: var(--sand);
+  header h1 {
+    margin: 0;
+    font-size: 20px;
     font-weight: 500;
+    letter-spacing: 0.15px;
   }
 
-  .stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1rem;
-    margin-bottom: 2.5rem;
+  .container {
+    max-width: 1200px;
+    margin: 24px auto;
+    padding: 0 16px;
   }
 
-  .stat-card {
-    background: var(--earth-800);
-    border: 1px solid var(--earth-700);
-    border-radius: 10px;
-    padding: 1.25rem 1.5rem;
-    position: relative;
-    overflow: hidden;
-    transition: border-color 0.3s;
+  .card {
+    background-color: var(--md-surface);
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+    margin-bottom: 24px;
+    padding: 24px;
   }
 
-  .stat-card:hover { border-color: var(--earth-600); }
-
-  .stat-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0;
-    width: 3px;
-    height: 100%;
+  .card-title {
+    margin-top: 0;
+    font-size: 20px;
+    font-weight: 500;
+    margin-bottom: 16px;
+    letter-spacing: 0.15px;
   }
 
-  .stat-card:nth-child(1)::before { background: var(--terracotta); }
-  .stat-card:nth-child(2)::before { background: var(--amber); }
-  .stat-card:nth-child(3)::before { background: var(--sage); }
-  .stat-card:nth-child(4)::before { background: var(--terracotta-glow); }
-  .stat-card:nth-child(5)::before { background: var(--amber-light); }
-
-  .stat-label {
-    font-size: 0.6rem;
-    text-transform: uppercase;
-    letter-spacing: 0.15em;
-    color: var(--earth-500);
-    margin-bottom: 0.5rem;
+  /* Controls */
+  .controls-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    margin-bottom: 24px;
   }
 
-  .stat-value {
-    font-family: 'Fraunces', serif;
-    font-size: 1.8rem;
-    font-weight: 400;
-    color: var(--sand-light);
-    line-height: 1;
+  .control-group {
+    display: flex;
+    flex-direction: column;
   }
 
-  .stat-detail {
-    font-size: 0.65rem;
-    color: var(--earth-500);
-    margin-top: 0.35rem;
+  .control-group label {
+    font-size: 12px;
+    color: rgba(0,0,0,0.6);
+    margin-bottom: 4px;
   }
 
-  .chart-section {
-    background: var(--earth-800);
-    border: 1px solid var(--earth-700);
-    border-radius: 12px;
-    padding: 2rem;
-    margin-bottom: 2rem;
-    position: relative;
+  select {
+    padding: 8px 12px;
+    font-family: 'Roboto', sans-serif;
+    font-size: 16px;
+    border: 1px solid rgba(0,0,0,0.38);
+    border-radius: 4px;
+    background: transparent;
+    outline: none;
+    min-width: 150px;
   }
 
-  .chart-section h3 {
-    font-family: 'Fraunces', serif;
-    font-size: 1.15rem;
-    font-weight: 400;
-    color: var(--sand-light);
-    margin-bottom: 0.25rem;
+  select:focus {
+    border-color: var(--md-primary);
+    border-width: 2px;
+    padding: 7px 11px;
   }
 
-  .chart-section .chart-desc {
-    font-size: 0.65rem;
-    color: var(--earth-500);
-    margin-bottom: 1.5rem;
-    max-width: 600px;
+  .checkbox-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
   }
 
+  .checkbox-label {
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+    cursor: pointer;
+  }
+
+  .checkbox-label input {
+    margin-right: 8px;
+    accent-color: var(--md-primary);
+  }
+
+  /* Charts */
   .chart-container {
     position: relative;
+    height: 400px;
     width: 100%;
-    height: 420px;
   }
 
-  .chart-container.short { height: 280px; }
-
-  .chart-legend {
-    display: flex;
-    gap: 1.5rem;
-    margin-bottom: 1rem;
-    flex-wrap: wrap;
-  }
-
-  .legend-item {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.7rem;
-    color: var(--sand);
-  }
-
-  .legend-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    flex-shrink: 0;
-  }
-
-  .legend-line {
-    width: 20px;
-    height: 0;
-    flex-shrink: 0;
-    border-top: 2px dashed;
-  }
-
-  .two-col {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 2rem;
-  }
-
-  @media (max-width: 900px) {
-    .two-col { grid-template-columns: 1fr; }
-  }
-
-  .yearly-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.72rem;
-  }
-
-  .yearly-table th {
-    text-align: left;
-    font-size: 0.6rem;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: var(--earth-500);
-    padding: 0.5rem 0.75rem;
-    border-bottom: 1px solid var(--earth-700);
-    font-weight: 500;
-  }
-
-  .yearly-table td {
-    padding: 0.6rem 0.75rem;
-    border-bottom: 1px solid var(--earth-700);
-    color: var(--sand);
-  }
-
-  .yearly-table tr:hover td { background: var(--earth-700); }
-  .yearly-table .retro { color: var(--red-retro); font-weight: 600; }
-  .yearly-table .advance { color: var(--green-advance); }
-
-  footer {
+  /* Loader */
+  #loader {
     text-align: center;
-    padding-top: 2rem;
-    border-top: 1px solid var(--earth-700);
-    margin-top: 2rem;
+    padding: 40px;
+    font-size: 16px;
+    color: rgba(0,0,0,0.6);
   }
-
-  footer p {
-    font-size: 0.6rem;
-    color: var(--earth-600);
-    letter-spacing: 0.05em;
-  }
-
-  footer a {
-    color: var(--earth-500);
-    text-decoration: none;
-    border-bottom: 1px dotted var(--earth-600);
-    transition: color 0.2s;
-  }
-
-  footer a:hover { color: var(--terracotta); }
-
-  .plate-deco {
-    position: absolute;
-    top: 1.5rem;
-    right: 1.5rem;
-    display: flex;
-    gap: 3px;
-  }
-
-  .plate {
-    width: 6px;
-    height: 18px;
-    background: var(--earth-700);
-    border-radius: 3px;
-    transform: skewX(-8deg);
-  }
-
-  .plate:nth-child(2) { height: 22px; opacity: 0.8; }
-  .plate:nth-child(3) { height: 16px; opacity: 0.6; }
-  .plate:nth-child(4) { height: 20px; opacity: 0.4; }
-  .plate:nth-child(5) { height: 14px; opacity: 0.3; }
 </style>
 </head>
 <body>
 
-<div class="dashboard">
-  <header>
-    <div class="title-pre">USCIS Employment-Based Immigration</div>
-    <h1>EB-2 China <span>Visa Bulletin</span></h1>
-    <div class="subtitle">Priority Date Tracker &mdash; Oct 2015 to Mar 2026 &mdash; 126 Monthly Bulletins</div>
-    <div class="subtitle" style="margin-top:0.5rem">Set your priority date: add <code style="background:var(--earth-700);padding:2px 6px;border-radius:4px;font-size:0.7rem">?pd=YYYY-MM-DD</code> to the URL</div>
-  </header>
+<header>
+  <h1>Visa Bulletin Priority Date Tracker</h1>
+</header>
 
-  <div class="status-banner" id="statusBanner">
-    <div class="status-icon" id="statusIcon">&#8987;</div>
-    <div class="status-text">
-      <h2 id="statusTitle">Loading...</h2>
-      <p id="statusDetail"></p>
-    </div>
-  </div>
+<div class="container">
+  
+  <div id="loader">Loading data...</div>
 
-  <div class="stats-grid">
-    <div class="stat-card">
-      <div class="stat-label">Table A Cutoff</div>
-      <div class="stat-value">Sep '21</div>
-      <div class="stat-detail">Final Action Date</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Table B Cutoff</div>
-      <div class="stat-value">Jan '22</div>
-      <div class="stat-detail">Dates for Filing</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Avg Movement '25</div>
-      <div class="stat-value">36.3</div>
-      <div class="stat-detail">days/month (Table A)</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Largest Jump</div>
-      <div class="stat-value">+334d</div>
-      <div class="stat-detail">Table B, Oct 2025</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Retrogression</div>
-      <div class="stat-value">-162d</div>
-      <div class="stat-detail">Table A, Feb 2025</div>
-    </div>
-  </div>
-
-  <div class="chart-section">
-    <div class="plate-deco">
-      <div class="plate"></div><div class="plate"></div><div class="plate"></div><div class="plate"></div><div class="plate"></div>
-    </div>
-    <h3>Wait Time to Become Current</h3>
-    <p class="chart-desc">
-      How long EB-2 China applicants waited from priority date to becoming current, for each monthly bulletin.
-      Solid = actual data. Dashed = projected 12 months based on recent cutoff movement velocity.
-    </p>
-    <div class="chart-legend">
-      <div class="legend-item"><div class="legend-dot" style="background:var(--terracotta)"></div> Table A &mdash; Final Action</div>
-      <div class="legend-item"><div class="legend-dot" style="background:var(--amber)"></div> Table B &mdash; Dates for Filing</div>
-      <div class="legend-item"><div class="legend-line" style="border-color:var(--earth-500)"></div> Dashed = Projected</div>
-    </div>
-    <div class="chart-container">
-      <canvas id="waitChart"></canvas>
-    </div>
-  </div>
-
-  <div class="chart-section">
-    <div class="plate-deco">
-      <div class="plate"></div><div class="plate"></div><div class="plate"></div><div class="plate"></div><div class="plate"></div>
-    </div>
-    <h3>Priority Date Timeline</h3>
-    <p class="chart-desc">
-      Historical cutoff dates for EB-2 China. Table A (Final Action) determines visa issuance;
-      Table B (Dates for Filing) allows earlier application submission. Your priority date shown as reference.
-    </p>
-    <div class="chart-legend">
-      <div class="legend-item"><div class="legend-dot" style="background:var(--terracotta)"></div> Table A &mdash; Final Action</div>
-      <div class="legend-item"><div class="legend-dot" style="background:var(--amber)"></div> Table B &mdash; Dates for Filing</div>
-      <div class="legend-item"><div class="legend-line" style="border-color:var(--sage)"></div> Priority Date</div>
-    </div>
-    <div class="chart-container">
-      <canvas id="timelineChart"></canvas>
-    </div>
-  </div>
-
-  <div class="two-col">
-    <div class="chart-section">
-      <div class="plate-deco">
-        <div class="plate"></div><div class="plate"></div><div class="plate"></div>
-      </div>
-      <h3>Monthly Movement</h3>
-      <p class="chart-desc">Table A priority date change per month (last 24 bulletins). Green = advancement, red = retrogression.</p>
-      <div class="chart-container short">
-        <canvas id="movementChart"></canvas>
+  <div id="dashboard" style="display: none;">
+    <div class="card">
+      <h2 class="card-title">Filters</h2>
+      <div class="controls-row">
+        <div class="control-group">
+          <label for="countrySelect">Country of Origin</label>
+          <select id="countrySelect"></select>
+        </div>
+        <div class="control-group">
+          <label>Visa Categories</label>
+          <div class="checkbox-group" id="categoryCheckboxes">
+            <!-- Checkboxes injected here -->
+          </div>
+        </div>
+        <div class="control-group">
+          <label for="tableSelect">Table Type</label>
+          <select id="tableSelect">
+            <option value="Final_Action">Final Action (Table A)</option>
+            <option value="Dates_for_Filing">Dates for Filing (Table B)</option>
+          </select>
+        </div>
       </div>
     </div>
 
-    <div class="chart-section">
-      <div class="plate-deco">
-        <div class="plate"></div><div class="plate"></div><div class="plate"></div>
-      </div>
-      <h3>Yearly Summary</h3>
-      <p class="chart-desc">Average daily movement per month and retrogression frequency by fiscal year.</p>
-      <div style="overflow-x:auto;">
-        <table class="yearly-table">
-          <thead>
-            <tr>
-              <th>Year</th>
-              <th>Table</th>
-              <th>Avg Days/Mo</th>
-              <th>Retro</th>
-              <th>Advance</th>
-            </tr>
-          </thead>
-          <tbody id="yearlyBody"></tbody>
-        </table>
+    <div class="card">
+      <h2 class="card-title">Priority Date Movement</h2>
+      <div class="chart-container">
+        <canvas id="pdChart"></canvas>
       </div>
     </div>
   </div>
 
-  <div class="chart-section">
-    <div class="plate-deco">
-      <div class="plate"></div><div class="plate"></div><div class="plate"></div><div class="plate"></div>
-    </div>
-    <h3>Table A vs Table B Gap</h3>
-    <p class="chart-desc">
-      The spread between Table B (filing eligibility) and Table A (visa issuance) cutoff dates.
-      A wider gap means longer waits between filing and approval.
-    </p>
-    <div class="chart-container short">
-      <canvas id="gapChart"></canvas>
-    </div>
-  </div>
-
-  <footer>
-    <p>
-      Data: U.S. Department of State Visa Bulletin &middot;
-      13,109 records &middot; Built with SQLite + Chart.js &middot;
-      Generated 2026-02-19
-    </p>
-  </footer>
 </div>
 
 <script>
-// Data is loaded dynamically via fetch()
-var TABLE_A_RAW = [];
-var TABLE_B_RAW = [];
-var MOVEMENT_A = [];
-var YEARLY = [];
+let fullData = [];
+let countries = [];
+let categories = [];
+let chartInstance = null;
 
+const chartColors = [
+    '#6200EE', '#03DAC6', '#FF0266', '#FFDE03', '#00E676', '#FF9100'
+];
 
-// Priority date: set via URL param ?pd=YYYY-MM-DD (default: example date)
-var urlParams = new URLSearchParams(window.location.search);
-var PD_STRING = urlParams.get('pd') || '2022-06-15';
-var MY_PD_TS = new Date(PD_STRING).getTime();
-var MY_PD_LABEL = fmtDate(PD_STRING);
-
-// Dynamic status banner
-function updateStatusBanner() {
-  var lastA = TABLE_A_RAW[TABLE_A_RAW.length - 1];
-  var lastB = TABLE_B_RAW[TABLE_B_RAW.length - 1];
-  var cutA = new Date(lastA[1]).getTime();
-  var cutB = new Date(lastB[1]).getTime();
-  var isCurrentA = cutA >= MY_PD_TS;
-  var isCurrentB = cutB >= MY_PD_TS;
-  var bMonth = fmtLabel(lastA[0]);
-  var icon = document.getElementById('statusIcon');
-  var title = document.getElementById('statusTitle');
-  var detail = document.getElementById('statusDetail');
-  var banner = document.getElementById('statusBanner');
-  if (isCurrentA) {
-    icon.textContent = '\u2713';
-    title.textContent = 'Priority Date Is Current';
-    banner.style.borderColor = '#7A8B6F';
-  } else {
-    icon.textContent = '\u23F3';
-    title.textContent = 'Priority Date Not Yet Current';
-    banner.style.borderColor = '#D4A937';
-  }
-  var txt = 'Priority date: ' + MY_PD_LABEL;
-  txt += ' \u2014 Table A cutoff: ' + fmtDate(lastA[1]);
-  if (!isCurrentA) txt += ' (' + Math.round((MY_PD_TS - cutA) / 86400000) + ' days away)';
-  txt += ' \u00B7 Table B cutoff: ' + fmtDate(lastB[1]);
-  if (!isCurrentB) txt += ' (' + Math.round((MY_PD_TS - cutB) / 86400000) + ' days away)';
-  txt += ' \u2014 As of ' + bMonth + ' bulletin';
-  detail.textContent = txt;
-}
-
-// ─── Helpers ───
-var MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-function fmtLabel(ym) {
-  var p = ym.split('-');
-  return MONTHS[parseInt(p[1],10)-1] + " '" + p[0].slice(2);
-}
-function fmtDate(iso) {
-  var d = new Date(iso);
-  return MONTHS[d.getUTCMonth()] + ' ' + d.getUTCDate() + ', ' + d.getUTCFullYear();
-}
-function pdTimestamp(iso) { return new Date(iso).getTime(); }
-
-// ─── Build aligned label set (union of Table A months) ───
-var labels = TABLE_A_RAW.map(function(r) { return r[0]; });
-var labelsFmt = labels.map(fmtLabel);
-
-// Build lookup for Table B by month key
-var tableBMap = {};
-TABLE_B_RAW.forEach(function(r) { tableBMap[r[0]] = r[1]; });
-
-// ─── Chart defaults ───
-Chart.defaults.color = '#7A5544';
-Chart.defaults.borderColor = 'rgba(92,61,46,0.3)';
-Chart.defaults.font.family = "'IBM Plex Mono', monospace";
-Chart.defaults.font.size = 11;
-
-var tooltipStyle = {
-  backgroundColor: 'rgba(26,18,11,0.95)',
-  titleColor: '#E8D5B5',
-  bodyColor: '#E8D5B5',
-  borderColor: '#5C3D2E',
-  borderWidth: 1,
-  padding: 12
-};
-
-// ─── 0. Wait Time to Become Current ───
-// For each bulletin month: wait = bulletin_date - cutoff_date
-// This shows how long applicants becoming current that month actually waited.
-function initWaitChart() {
-  var DAY = 86400000;
-
-  function addMonths(ym, n) {
-    var p = ym.split('-'), yr = parseInt(p[0]), mo = parseInt(p[1]) + n;
-    while (mo > 12) { yr++; mo -= 12; }
-    return yr + '-' + (mo < 10 ? '0' + mo : '' + mo);
-  }
-
-  var bMap = {};
-  TABLE_B_RAW.forEach(function(r) { bMap[r[0]] = r[1]; });
-
-  // Real data: wait_time = bulletin_month - cutoff_date
-  var months = [], wtA = [], wtB = [];
-  for (var i = 0; i < TABLE_A_RAW.length; i++) {
-    var m = TABLE_A_RAW[i][0];
-    months.push(m);
-    var bulletin = new Date(m + '-01').getTime();
-    wtA.push(Math.round((bulletin - new Date(TABLE_A_RAW[i][1]).getTime()) / DAY));
-    var bp = bMap[m];
-    wtB.push(bp ? Math.round((bulletin - new Date(bp).getTime()) / DAY) : null);
-  }
-
-  var lastReal = months.length - 1;
-
-  // Prediction: project 12 months forward using recent cutoff movement rates
-  var mvA = [];
-  for (var i = Math.max(1, TABLE_A_RAW.length - 6); i < TABLE_A_RAW.length; i++) {
-    mvA.push((new Date(TABLE_A_RAW[i][1]).getTime() - new Date(TABLE_A_RAW[i-1][1]).getTime()) / DAY);
-  }
-  var avgA = mvA.length ? mvA.reduce(function(s,v){return s+v;},0) / mvA.length : 30;
-
-  var mvB = [];
-  for (var i = Math.max(1, TABLE_B_RAW.length - 6); i < TABLE_B_RAW.length; i++) {
-    mvB.push((new Date(TABLE_B_RAW[i][1]).getTime() - new Date(TABLE_B_RAW[i-1][1]).getTime()) / DAY);
-  }
-  var avgB = mvB.length ? mvB.reduce(function(s,v){return s+v;},0) / mvB.length : 30;
-
-  var lastCutA = new Date(TABLE_A_RAW[TABLE_A_RAW.length-1][1]).getTime();
-  var lastCutB = new Date(TABLE_B_RAW[TABLE_B_RAW.length-1][1]).getTime();
-  var lastMonth = months[months.length - 1];
-
-  for (var j = 1; j <= 12; j++) {
-    var nm = addMonths(lastMonth, j);
-    months.push(nm);
-    var nb = new Date(nm + '-01').getTime();
-    wtA.push(Math.round((nb - (lastCutA + avgA * j * DAY)) / DAY));
-    wtB.push(Math.round((nb - (lastCutB + avgB * j * DAY)) / DAY));
-  }
-
-  var chartLabels = months.map(fmtLabel);
-
-  // Highlight the month the configured priority date became current on Table A
-  var myPD = MY_PD_TS;
-  var myMonth = null;
-  for (var i = 0; i < TABLE_A_RAW.length; i++) {
-    if (new Date(TABLE_A_RAW[i][1]).getTime() >= myPD) { myMonth = TABLE_A_RAW[i][0]; break; }
-  }
-
-  new Chart(document.getElementById('waitChart').getContext('2d'), {
-    type: 'line',
-    data: {
-      labels: chartLabels,
-      datasets: [
-        {
-          label: 'Table A',
-          data: wtA,
-          borderColor: '#C45A3C',
-          backgroundColor: 'rgba(196,90,60,0.06)',
-          fill: true,
-          borderWidth: 2.5,
-          pointRadius: wtA.map(function(v,i){ return months[i] === myMonth ? 7 : 0; }),
-          pointBackgroundColor: '#7A8B6F',
-          pointBorderColor: '#1A120B',
-          pointBorderWidth: 2,
-          pointHoverRadius: 5,
-          pointHoverBackgroundColor: '#C45A3C',
-          tension: 0.15,
-          segment: {
-            borderDash: function(ctx) {
-              return ctx.p0DataIndex >= lastReal ? [6, 3] : undefined;
-            }
-          }
-        },
-        {
-          label: 'Table B',
-          data: wtB,
-          borderColor: '#D4A937',
-          backgroundColor: 'rgba(212,169,55,0.06)',
-          fill: true,
-          borderWidth: 2.5,
-          pointRadius: 0,
-          pointHoverRadius: 5,
-          pointHoverBackgroundColor: '#D4A937',
-          tension: 0.15,
-          spanGaps: true,
-          segment: {
-            borderDash: function(ctx) {
-              return ctx.p0DataIndex >= lastReal ? [6, 3] : undefined;
-            }
-          }
-        }
-      ]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      interaction: { mode: 'index', intersect: false },
-      plugins: {
-        legend: { display: false },
-        tooltip: Object.assign({}, tooltipStyle, {
-          callbacks: {
-            title: function(items) {
-              var idx = items[0].dataIndex;
-              var lbl = items[0].label;
-              if (months[idx] === myMonth) lbl += ' (became current)';
-              else if (idx > lastReal) lbl += ' (projected)';
-              return lbl;
-            },
-            label: function(item) {
-              if (item.parsed.y == null) return '';
-              var yr = (item.parsed.y / 365).toFixed(1);
-              return item.dataset.label + ': ' + yr + ' yr wait (' + item.parsed.y + ' days)';
-            }
-          }
-        })
-      },
-      scales: {
-        x: {
-          grid: { color: 'rgba(92,61,46,0.15)' },
-          ticks: { color: '#7A5544', maxRotation: 0, autoSkip: true, maxTicksLimit: 12, font: { size: 10 } }
-        },
-        y: {
-          grid: { color: 'rgba(92,61,46,0.15)' },
-          ticks: {
-            color: '#7A5544',
-            callback: function(v) { return (v / 365).toFixed(1) + ' yr'; }
-          },
-          title: { display: true, text: 'Wait Time', color: '#7A5544', font: { size: 10 } },
-          min: 0
-        }
-      }
+async function loadData() {
+  Papa.parse('data/visa_bulletin_all.csv', {
+    download: true,
+    header: true,
+    skipEmptyLines: true,
+    complete: function(results) {
+      fullData = results.data;
+      processInitialData();
     }
   });
 }
 
-// ─── 1. Timeline Chart ───
-function initTimelineChart() {
-  new Chart(document.getElementById('timelineChart').getContext('2d'), {
-    type: 'line',
-    data: {
-      labels: labelsFmt,
-      datasets: [
-        {
-          label: 'Table A - Final Action',
-          data: TABLE_A_RAW.map(function(r) { return pdTimestamp(r[1]); }),
-          borderColor: '#C45A3C',
-          backgroundColor: 'rgba(196,90,60,0.08)',
-          fill: false,
-          borderWidth: 2.5,
-          pointRadius: 0,
-          pointHoverRadius: 5,
-          pointHoverBackgroundColor: '#C45A3C',
-          tension: 0.1
-        },
-        {
-          label: 'Table B - Dates for Filing',
-          data: labels.map(function(lbl) {
-            var pd = tableBMap[lbl];
-            return pd ? pdTimestamp(pd) : null;
-          }),
-          borderColor: '#D4A937',
-          backgroundColor: 'rgba(212,169,55,0.08)',
-          fill: false,
-          borderWidth: 2.5,
-          pointRadius: 0,
-          pointHoverRadius: 5,
-          pointHoverBackgroundColor: '#D4A937',
-          tension: 0.1,
-          spanGaps: true
-        },
-        {
-          label: 'Priority Date (' + fmtLabel(PD_STRING.slice(0,7)) + ')',
-          data: labels.map(function() { return MY_PD_TS; }),
-          borderColor: '#7A8B6F',
-          borderDash: [8, 4],
-          borderWidth: 2,
-          pointRadius: 0,
-          pointHoverRadius: 0,
-          fill: false
-        }
-      ]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      interaction: { mode: 'index', intersect: false },
-      plugins: {
-        legend: { display: false },
-        tooltip: Object.assign({}, tooltipStyle, {
-          callbacks: {
-            label: function(item) {
-              if (item.datasetIndex === 2) return 'Priority Date: ' + MY_PD_LABEL;
-              if (item.parsed.y == null) return '';
-              return item.dataset.label + ': ' + fmtDate(new Date(item.parsed.y).toISOString().slice(0,10));
-            }
-          }
-        })
-      },
-      scales: {
-        x: {
-          grid: { color: 'rgba(92,61,46,0.15)' },
-          ticks: {
-            color: '#7A5544',
-            maxRotation: 0,
-            autoSkip: true,
-            maxTicksLimit: 12,
-            font: { size: 10 }
-          }
-        },
-        y: {
-          type: 'linear',
-          grid: { color: 'rgba(92,61,46,0.15)' },
-          ticks: {
-            color: '#7A5544',
-            callback: function(val) {
-              var d = new Date(val);
-              return MONTHS[d.getUTCMonth()] + " '" + String(d.getUTCFullYear()).slice(2);
-            }
-          }
-        }
-      }
-    }
+function processInitialData() {
+  const countrySet = new Set();
+  const catSet = new Set();
+  
+  fullData.forEach(row => {
+    countrySet.add(row.country);
+    catSet.add(row.category);
   });
-}
 
-// ─── 2. Monthly Movement Chart ───
-function initMovementChart() {
-  new Chart(document.getElementById('movementChart').getContext('2d'), {
-    type: 'bar',
-    data: {
-      labels: MOVEMENT_A.map(function(d) { return d.month; }),
-      datasets: [{
-        label: 'Days Moved',
-        data: MOVEMENT_A.map(function(d) { return d.days; }),
-        backgroundColor: MOVEMENT_A.map(function(d) {
-          if (d.days > 0) return 'rgba(90,138,90,0.8)';
-          if (d.days < 0) return 'rgba(179,58,58,0.8)';
-          return 'rgba(92,61,46,0.3)';
-        }),
-        borderColor: MOVEMENT_A.map(function(d) {
-          if (d.days > 0) return '#5A8A5A';
-          if (d.days < 0) return '#B33A3A';
-          return 'rgba(92,61,46,0.5)';
-        }),
-        borderWidth: 1,
-        borderRadius: 3
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false },
-        tooltip: Object.assign({}, tooltipStyle, {
-          callbacks: {
-            label: function(item) {
-              var v = item.parsed.y;
-              if (v > 0) return '+' + v + ' days advanced';
-              if (v < 0) return v + ' days retrogressed';
-              return 'No movement';
-            }
-          }
-        })
-      },
-      scales: {
-        x: {
-          grid: { display: false },
-          ticks: { color: '#7A5544', maxRotation: 45, font: { size: 9 } }
-        },
-        y: {
-          grid: { color: 'rgba(92,61,46,0.15)' },
-          ticks: {
-            color: '#7A5544',
-            callback: function(v) { return v > 0 ? '+' + v + 'd' : v + 'd'; }
-          }
-        }
-      }
-    }
+  countries = Array.from(countrySet).sort();
+  categories = Array.from(catSet).sort();
+
+  // Populate Country Dropdown
+  const countrySelect = document.getElementById('countrySelect');
+  countries.forEach(c => {
+    const opt = document.createElement('option');
+    opt.value = c;
+    opt.textContent = c.replace(/_/g, ' ');
+    if (c === 'China') opt.selected = true;
+    countrySelect.appendChild(opt);
   });
-}
 
-// ─── 3. Yearly Summary Table ───
-function initYearlyTable() {
-  var tbody = document.getElementById('yearlyBody');
-  YEARLY.forEach(function(row) {
-    var tr = document.createElement('tr');
-    var tdYear = document.createElement('td');
-    tdYear.textContent = row.year;
-    tr.appendChild(tdYear);
-    var tdTable = document.createElement('td');
-    tdTable.textContent = row.table === 'A' ? 'Final Action' : 'Filing';
-    tdTable.style.color = row.table === 'A' ? '#C45A3C' : '#D4A937';
-    tr.appendChild(tdTable);
-    var tdAvg = document.createElement('td');
-    tdAvg.textContent = (row.avg > 0 ? '+' : '') + row.avg.toFixed(1);
-    if (row.avg < 0) tdAvg.className = 'retro';
-    else if (row.avg > 30) tdAvg.className = 'advance';
-    tr.appendChild(tdAvg);
-    var tdRetro = document.createElement('td');
-    tdRetro.textContent = row.retro;
-    if (row.retro > 0) tdRetro.className = 'retro';
-    tr.appendChild(tdRetro);
-    var tdAdv = document.createElement('td');
-    tdAdv.textContent = row.adv;
-    tr.appendChild(tdAdv);
-    tbody.appendChild(tr);
-  });
-}
-
-// ─── 4. Table A vs Table B Gap Chart ───
-function initGapChart() {
-  var gapLabels = [];
-  var gapValues = [];
-  TABLE_A_RAW.forEach(function(aRow) {
-    var bPd = tableBMap[aRow[0]];
-    if (bPd) {
-      gapLabels.push(fmtLabel(aRow[0]));
-      gapValues.push(Math.round((new Date(bPd) - new Date(aRow[1])) / (1000*60*60*24)));
-    }
-  });
-  new Chart(document.getElementById('gapChart').getContext('2d'), {
-    type: 'line',
-    data: {
-      labels: gapLabels,
-      datasets: [{
-        label: 'Gap (Table B - Table A)',
-        data: gapValues,
-        borderColor: '#D4A937',
-        backgroundColor: 'rgba(212,169,55,0.12)',
-        fill: true,
-        borderWidth: 2,
-        pointRadius: 0,
-        pointHoverRadius: 4,
-        tension: 0.2
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false },
-        tooltip: Object.assign({}, tooltipStyle, {
-          callbacks: {
-            label: function(item) {
-              return item.parsed.y + ' days gap between Table B and Table A';
-            }
-          }
-        })
-      },
-      scales: {
-        x: {
-          grid: { color: 'rgba(92,61,46,0.15)' },
-          ticks: {
-            color: '#7A5544',
-            maxRotation: 0,
-            autoSkip: true,
-            maxTicksLimit: 12,
-            font: { size: 10 }
-          }
-        },
-        y: {
-          grid: { color: 'rgba(92,61,46,0.15)' },
-          ticks: {
-            color: '#7A5544',
-            callback: function(v) { return v + 'd'; }
-          },
-          title: {
-            display: true,
-            text: 'Days',
-            color: '#7A5544',
-            font: { size: 10 }
-          }
-        }
-      }
-    }
-  });
-}
-
-// ─── Data Loading ───
-fetch('data/dashboard.json')
-  .then(response => response.json())
-  .then(data => {
-    TABLE_A_RAW = data.TABLE_A_RAW;
-    TABLE_B_RAW = data.TABLE_B_RAW;
-    MOVEMENT_A = data.MOVEMENT_A;
-    YEARLY = data.YEARLY;
-
-    document.querySelector('footer p').innerHTML = 
-      `Data: U.S. Department of State Visa Bulletin &middot; ` +
-      `Built with Pandas + Chart.js &middot; ` +
-      `Generated ${data.LAST_UPDATED}`;
-
-    // Update derived arrays
-    labels = TABLE_A_RAW.map(function(r) { return r[0]; });
-    labelsFmt = labels.map(fmtLabel);
+  // Populate Category Checkboxes
+  const catDiv = document.getElementById('categoryCheckboxes');
+  categories.forEach((cat, idx) => {
+    const label = document.createElement('label');
+    label.className = 'checkbox-label';
+    const cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.value = cat;
+    // Default select 2nd
+    if (cat === '2nd') cb.checked = true;
+    cb.addEventListener('change', updateChart);
     
-    tableBMap = {};
-    TABLE_B_RAW.forEach(function(r) { tableBMap[r[0]] = r[1]; });
-
-    updateStatusBanner();
-    initWaitChart();
-    initTimelineChart();
-    initMovementChart();
-    initGapChart();
-    initYearlyTable();
-  })
-  .catch(error => {
-    console.error('Error loading data:', error);
-    document.getElementById('statusTitle').textContent = 'Error Loading Data';
-    document.getElementById('statusDetail').textContent = 'Could not fetch dashboard.json. Are you running a local web server?';
+    label.appendChild(cb);
+    label.appendChild(document.createTextNode(cat));
+    catDiv.appendChild(label);
   });
+
+  document.getElementById('countrySelect').addEventListener('change', updateChart);
+  document.getElementById('tableSelect').addEventListener('change', updateChart);
+
+  document.getElementById('loader').style.display = 'none';
+  document.getElementById('dashboard').style.display = 'block';
+
+  // Ensure data is sorted
+  fullData.sort((a,b) => new Date(a.bulletin_date) - new Date(b.bulletin_date));
+
+  updateChart();
+}
+
+function updateChart() {
+  const selectedCountry = document.getElementById('countrySelect').value;
+  const selectedTable = document.getElementById('tableSelect').value;
+  
+  const checkboxes = document.querySelectorAll('#categoryCheckboxes input:checked');
+  const selectedCategories = Array.from(checkboxes).map(cb => cb.value);
+
+  const datasets = [];
+  
+  selectedCategories.forEach((cat, idx) => {
+      // Get historical data for this combination
+      const history = fullData.filter(d => d.country === selectedCountry && d.category === cat && d.table_type === selectedTable);
+      
+      const dataPoints = [];
+      history.forEach(row => {
+          if (row.is_current === "1" || row.is_unavailable === "1") return;
+          const pd = new Date(row.priority_date).getTime();
+          if (!isNaN(pd)) {
+              dataPoints.push({
+                  x: new Date(row.bulletin_date).getTime(),
+                  y: pd
+              });
+          }
+      });
+
+      datasets.push({
+          label: `${cat} (Historical)`,
+          data: dataPoints,
+          borderColor: chartColors[idx % chartColors.length],
+          backgroundColor: chartColors[idx % chartColors.length],
+          fill: false,
+          tension: 0.1,
+          pointRadius: 2
+      });
+
+      // Get predictions using our isolated function
+      if (window.predictFutureCutoff) {
+          const predictions = window.predictFutureCutoff(fullData, selectedTable, cat, selectedCountry, 12);
+          if (predictions && predictions.length > 0) {
+              const projPoints = [];
+              
+              // Connect the last historical point
+              if (dataPoints.length > 0) {
+                  projPoints.push(dataPoints[dataPoints.length - 1]);
+              }
+              
+              predictions.forEach(p => {
+                  projPoints.push({
+                      x: new Date(p.bulletin_date).getTime(),
+                      y: p.priority_date
+                  });
+              });
+
+              datasets.push({
+                  label: `${cat} (Projected)`,
+                  data: projPoints,
+                  borderColor: chartColors[idx % chartColors.length],
+                  backgroundColor: 'transparent',
+                  borderDash: [5, 5],
+                  fill: false,
+                  tension: 0.1,
+                  pointRadius: 3,
+                  pointStyle: 'rect'
+              });
+          }
+      }
+  });
+
+  renderChart(datasets);
+}
+
+function renderChart(datasets) {
+    const ctx = document.getElementById('pdChart').getContext('2d');
+    
+    if (chartInstance) {
+        chartInstance.destroy();
+    }
+
+    chartInstance = new Chart(ctx, {
+        type: 'line',
+        data: { datasets: datasets },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    type: 'time',
+                    time: { unit: 'month' },
+                    title: { display: true, text: 'Bulletin Date' }
+                },
+                y: {
+                    type: 'time',
+                    time: { unit: 'month' },
+                    title: { display: true, text: 'Priority Date' }
+                }
+            },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) label += ': ';
+                            if (context.parsed.y !== null) {
+                                label += new Date(context.parsed.y).toISOString().split('T')[0];
+                            }
+                            return label;
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+// Init
+window.onload = loadData;
 </script>
 </body>
 </html>
