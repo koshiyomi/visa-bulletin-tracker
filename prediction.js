@@ -121,20 +121,38 @@ window.predictFutureCutoff = (history, tableType, category, country, monthsAhead
         electionMultiplier = 0.90; // Post-election transition slowdown (10% penalty)
     }
 
+    // Calculate Economy Multiplier based on historical correlation findings
+    // EB-2 India has strong correlation: High QQQ = Slower movement; High Unemployment = Faster movement
+    let economyMultiplier = 1.0;
+    if (externalFactors) {
+        let qqqImpact = 1.0 - (externalFactors.qqq_yoy_pct / 100.0) * 0.4; // 40% scaling
+        let unempImpact = 1.0 + (externalFactors.unemployment_yoy_diff * 0.1); // 10% scaling per 1% unemp diff
+        
+        qqqImpact = Math.max(0.6, Math.min(1.4, qqqImpact));
+        unempImpact = Math.max(0.8, Math.min(1.2, unempImpact));
+        
+        if (country === 'India') {
+            economyMultiplier = qqqImpact * unempImpact;
+        } else {
+            // For China/Others, dampen the effect significantly due to weak correlation
+            economyMultiplier = 1.0 + ((qqqImpact * unempImpact - 1.0) * 0.25);
+        }
+    }
+
     // 3. Blending (Mean Reversion)
-    // We smoothly transition from short-term momentum to the historical macro trend.
+    // We smoothly transition from short-term momentum to the macro trend.
     // In Month 1, we rely heavily on recent momentum (e.g. 90% recent, 10% macro).
     // By Month 12, we transition to mostly macro trend (e.g. 10% recent, 90% macro).
-    const blendFactor = Math.max(0.1, 1.0 - (i / 12) * 0.9); // Starts near 1.0, decays to 0.1 at 12 months
-    const blendedBase = (Math.max(recentAvg, 0) * blendFactor) + (Math.max(macroAvg, 0) * (1 - blendFactor));
+    const blendFactor = Math.max(0.1, 1.0 - (i / 12) * 0.9);
+    
+    // Apply Economy Multiplier ONLY to the long-term Macro trend, as short-term is just administrative momentum
+    const adjustedMacroAvg = Math.max(macroAvg, 0) * economyMultiplier;
+    const blendedBase = (Math.max(recentAvg, 0) * blendFactor) + (adjustedMacroAvg * (1 - blendFactor));
 
     const blendedDays = blendedBase * seasonMultiplier * electionMultiplier;
 
-    // Apply external factor boost if provided (for future API expansion)
-    const boostMultiplier = externalFactors?.boost ?? 1;
-    
     // Calculate new priority date timestamp
-    lastPdDate += (blendedDays * boostMultiplier) * DAY_MS;
+    lastPdDate += blendedDays * DAY_MS;
     
     predictions.push({
       bulletin_date: newBulletinStr,

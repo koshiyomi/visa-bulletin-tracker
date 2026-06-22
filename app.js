@@ -3,6 +3,7 @@
 let fullData = [];
 let countries = [];
 let chartInstance = null;
+let macroFactors = null;
 
 const chartColors = [
     '#8b5cf6', '#06b6d4', '#f43f5e', '#f59e0b', '#10b981', '#FF9100'
@@ -31,12 +32,24 @@ const simplifiedCategories = ["EB-1", "EB-2", "EB-3", "EB-3 Other", "EB-4", "EB-
 /**
  * Fetches and parses the CSV data file using PapaParse.
  */
+/**
+ * Fetches and parses the CSV data and Macro JSON.
+ */
 const loadData = async () => {
+  try {
+    const macroRes = await fetch('data/macro.json');
+    if (macroRes.ok) {
+        macroFactors = await macroRes.json();
+    }
+  } catch (e) {
+    console.error("Failed to load macro data", e);
+  }
+
   Papa.parse('data/visa_bulletin_all.csv', {
     download: true,
     header: true,
     skipEmptyLines: true,
-    complete: ({ data }) => { // Destructuring the results object
+    complete: ({ data }) => {
       fullData = data;
       processInitialData();
     }
@@ -197,7 +210,7 @@ const updateChart = () => {
 
       // Integrate predictive projections
       if (window.predictFutureCutoff) {
-          const predictions = window.predictFutureCutoff(fullData, selectedTable, actualRawCategory, selectedCountry, 12);
+          const predictions = window.predictFutureCutoff(fullData, selectedTable, actualRawCategory, selectedCountry, null, macroFactors);
           
           if (predictions?.length > 0) { // Optional chaining
               const projPoints = [];
