@@ -1,6 +1,6 @@
 import csv
 from datetime import datetime
-import statistics
+from dateutil.relativedelta import relativedelta
 
 DAY_MS = 86400000
 
@@ -16,70 +16,72 @@ for r in data:
 
 data.sort(key=lambda x: datetime.strptime(x['bulletin_date'], '%Y-%m-%d'))
 
-segment = [d for d in data if d['table_type'] == 'Final_Action' and d['category'] == '2nd' and d['normalized_country'] == 'China']
-
-movements = []
-monthlyMovements = {i: [] for i in range(12)}
-
-for i in range(1, len(segment)):
-    prev = segment[i-1]
-    curr = segment[i]
-    if curr['is_unavailable'] == '1' or prev['is_unavailable'] == '1' or curr['is_current'] == '1' or prev['is_current'] == '1':
-        continue
+def simulate(table, cat, country):
+    segment = [d for d in data if d['table_type'] == table and d['category'] == cat and d['normalized_country'] == country]
+    if not segment: return
     
-    try:
-        prevPd = datetime.strptime(prev['priority_date'], '%Y-%m-%d').timestamp() * 1000
-        currPd = datetime.strptime(curr['priority_date'], '%Y-%m-%d').timestamp() * 1000
-        diffDays = (currPd - prevPd) / DAY_MS
-        movements.append(diffDays)
-        currMonth = datetime.strptime(curr['bulletin_date'], '%Y-%m-%d').month - 1
-        monthlyMovements[currMonth].append(diffDays)
-    except:
-        pass
-
-recentMoves = movements[-6:]
-recentAvg = sum(recentMoves) / len(recentMoves) if recentMoves else 30
-
-lastRecord = segment[-1]
-lastBulletinDate = datetime.strptime(lastRecord['bulletin_date'], '%Y-%m-%d')
-lastPdDate = datetime.strptime(lastRecord['priority_date'], '%Y-%m-%d').timestamp() * 1000
-
-print(f"recentAvg: {recentAvg}")
-print(f"lastPdDate Start: {lastPdDate}")
-
-predictions = []
-for i in range(1, 13):
-    # advance month
-    m = lastBulletinDate.month
-    y = lastBulletinDate.year
-    if m == 12:
-        m = 1
-        y += 1
-    else:
-        m += 1
-    lastBulletinDate = lastBulletinDate.replace(year=y, month=m)
+    movements = []
+    for i in range(1, len(segment)):
+        prev = segment[i-1]
+        curr = segment[i]
+        if curr['is_unavailable'] == '1' or prev['is_unavailable'] == '1' or curr['is_current'] == '1' or prev['is_current'] == '1':
+            continue
+        try:
+            prevPd = datetime.strptime(prev['priority_date'], '%Y-%m-%d').timestamp() * 1000
+            currPd = datetime.strptime(curr['priority_date'], '%Y-%m-%d').timestamp() * 1000
+            movements.append((currPd - prevPd) / DAY_MS)
+        except:
+            pass
+            
+    recentAvg = sum(movements[-6:]) / 6 if len(movements) >= 6 else 30
+    macroAvg = sum(movements) / len(movements) if movements else 30
     
-    targetMonth = lastBulletinDate.month - 1
-    targetYear = lastBulletinDate.year
+    print(f"\n{'='*60}")
+    print(f"Prediction Debug: {table} | {cat} | {country}")
+    print(f"Short-Term Momentum (recentAvg): {recentAvg:.1f} days/month")
+    print(f"Long-Term Trend (macroAvg):     {macroAvg:.1f} days/month")
+    print(f"{'='*60}")
     
-    histMoves = monthlyMovements[targetMonth]
-    histAvg = sum(histMoves) / len(histMoves) if histMoves else recentAvg
-    
-    electionMultiplier = 1.0
-    if targetYear % 4 == 0:
-        electionMultiplier = 0.85
-    elif targetYear % 4 == 1:
-        electionMultiplier = 0.90
+    last_record = segment[-1]
+    if last_record['is_current'] == '1' or last_record['is_unavailable'] == '1':
+        print("Category is CURRENT or UNAVAILABLE. Cannot predict.")
+        return
         
-    blendedDays = ((recentAvg * 0.4) + (histAvg * 0.6)) * electionMultiplier
+    last_bulletin = datetime.strptime(last_record['bulletin_date'], '%Y-%m-%d')
+    last_pd = datetime.strptime(last_record['priority_date'], '%Y-%m-%d')
     
-    lastPdDate += blendedDays * DAY_MS
-    predictions.append({
-        'bulletin_date': lastBulletinDate.strftime('%Y-%m-%d'),
-        'priority_date': datetime.fromtimestamp(lastPdDate/1000).strftime('%Y-%m-%d'),
-        'blendedDays': blendedDays,
-        'histAvg': histAvg
-    })
+    print(f"Anchor: {last_bulletin.strftime('%Y-%m')} -> PD: {last_pd.strftime('%Y-%m-%d')}")
+    print("-" * 60)
+    print(f"{'Month':<10} | {'BlendWeight':<15} | {'Multiplier':<10} | {'DaysMoved':<10} | {'Projected PD'}")
+    print("-" * 60)
+    
+    for i in range(1, 25): # Predict 24 months out
+        last_bulletin += relativedelta(months=1)
+        targetMonth = last_bulletin.month - 1 # 0-indexed
+        targetYear = last_bulletin.year
+        
+        seasonMultiplier = 1.0
+        if 9 <= targetMonth <= 11: seasonMultiplier = 1.3
+        elif 0 <= targetMonth <= 2: seasonMultiplier = 1.0
+        elif 3 <= targetMonth <= 5: seasonMultiplier = 0.8
+        elif 6 <= targetMonth <= 8: seasonMultiplier = 0.3
+        
+        electionMultiplier = 1.0
+        if targetYear % 4 == 0: electionMultiplier = 0.85
+        elif targetYear % 4 == 1: electionMultiplier = 0.90
+            
+        blendFactor = max(0.1, 1.0 - (i / 12) * 0.9)
+        blendedBase = (max(recentAvg, 0) * blendFactor) + (max(macroAvg, 0) * (1 - blendFactor))
+        
+        blendedDays = blendedBase * seasonMultiplier * electionMultiplier
+        
+        last_pd += relativedelta(days=int(blendedDays))
+        
+        print(f"{last_bulletin.strftime('%Y-%m'):<10} | "
+              f"{blendFactor*100:3.0f}% R / {(1-blendFactor)*100:3.0f}% M | "
+              f"{seasonMultiplier*electionMultiplier:<10.2f} | "
+              f"{int(blendedDays):<10} | "
+              f"{last_pd.strftime('%Y-%m-%d')}")
 
-for p in predictions:
-    print(p)
+simulate('Final_Action', '2nd', 'China')
+simulate('Final_Action', '3rd', 'China')

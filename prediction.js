@@ -55,6 +55,11 @@ window.predictFutureCutoff = (history, tableType, category, country, monthsAhead
     ? recentMoves.reduce((acc, val) => acc + val, 0) / recentMoves.length 
     : 30; // Default fallback to 1 month (30 days) of movement
 
+  // Calculate the macro historical trend (average of ALL valid movements)
+  const macroAvg = movements.length > 0
+    ? movements.reduce((acc, val) => acc + val, 0) / movements.length
+    : 30;
+
   const predictions = [];
   const lastRecord = segment.at(-1); // Modern array syntax to get last item
   
@@ -116,12 +121,14 @@ window.predictFutureCutoff = (history, tableType, category, country, monthsAhead
         electionMultiplier = 0.90; // Post-election transition slowdown (10% penalty)
     }
 
-    // 3. Blending
-    // We only project positive/steady momentum using multipliers to avoid predicting 
-    // highly unrealistic "yo-yo" crashes and spikes every single year.
-    // If recent momentum is already negative (retrogression), we just propagate it slightly slowed down.
-    const baseMoves = Math.max(recentAvg, 0); // Ignore recent crashes for long-term projection
-    const blendedDays = baseMoves * seasonMultiplier * electionMultiplier;
+    // 3. Blending (Mean Reversion)
+    // We smoothly transition from short-term momentum to the historical macro trend.
+    // In Month 1, we rely heavily on recent momentum (e.g. 90% recent, 10% macro).
+    // By Month 12, we transition to mostly macro trend (e.g. 10% recent, 90% macro).
+    const blendFactor = Math.max(0.1, 1.0 - (i / 12) * 0.9); // Starts near 1.0, decays to 0.1 at 12 months
+    const blendedBase = (Math.max(recentAvg, 0) * blendFactor) + (Math.max(macroAvg, 0) * (1 - blendFactor));
+
+    const blendedDays = blendedBase * seasonMultiplier * electionMultiplier;
 
     // Apply external factor boost if provided (for future API expansion)
     const boostMultiplier = externalFactors?.boost ?? 1;
