@@ -4,177 +4,40 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Visa Bulletin Tracker</title>
+<!-- Scripts -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+<!-- Zoom Plugin -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-<script src="prediction.js"></script>
-
-<style>
-  :root {
-    --md-primary: #6200EE;
-    --md-primary-variant: #3700B3;
-    --md-secondary: #03DAC6;
-    --md-secondary-variant: #018786;
-    --md-background: #F5F5F6;
-    --md-surface: #FFFFFF;
-    --md-error: #B00020;
-    --md-on-primary: #FFFFFF;
-    --md-on-secondary: #000000;
-    --md-on-background: #000000;
-    --md-on-surface: #000000;
-    
-    /* Chart Colors */
-    --chart-c1: #6200EE;
-    --chart-c2: #03DAC6;
-    --chart-c3: #FF0266;
-    --chart-c4: #FFDE03;
-    --chart-c5: #00E676;
-    --chart-c6: #FF9100;
-  }
-
-  body {
-    margin: 0;
-    padding: 0;
-    background-color: var(--md-background);
-    color: var(--md-on-background);
-    font-family: 'Roboto', sans-serif;
-    -webkit-font-smoothing: antialiased;
-  }
-
-  header {
-    background-color: var(--md-primary);
-    color: var(--md-on-primary);
-    padding: 16px 24px;
-    box-shadow: 0 4px 5px 0 rgba(0,0,0,0.14), 0 1px 10px 0 rgba(0,0,0,0.12), 0 2px 4px -1px rgba(0,0,0,0.20);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  header h1 {
-    margin: 0;
-    font-size: 20px;
-    font-weight: 500;
-    letter-spacing: 0.15px;
-  }
-
-  .container {
-    max-width: 1200px;
-    margin: 24px auto;
-    padding: 0 16px;
-  }
-
-  .card {
-    background-color: var(--md-surface);
-    border-radius: 8px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
-    margin-bottom: 24px;
-    padding: 24px;
-  }
-
-  .card-title {
-    margin-top: 0;
-    font-size: 20px;
-    font-weight: 500;
-    margin-bottom: 16px;
-    letter-spacing: 0.15px;
-  }
-
-  /* Controls */
-  .controls-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 24px;
-    margin-bottom: 24px;
-  }
-
-  .control-group {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .control-group label {
-    font-size: 12px;
-    color: rgba(0,0,0,0.6);
-    margin-bottom: 4px;
-  }
-
-  select {
-    padding: 8px 12px;
-    font-family: 'Roboto', sans-serif;
-    font-size: 16px;
-    border: 1px solid rgba(0,0,0,0.38);
-    border-radius: 4px;
-    background: transparent;
-    outline: none;
-    min-width: 150px;
-  }
-
-  select:focus {
-    border-color: var(--md-primary);
-    border-width: 2px;
-    padding: 7px 11px;
-  }
-
-  .checkbox-group {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-  }
-
-  .checkbox-label {
-    display: flex;
-    align-items: center;
-    font-size: 14px;
-    cursor: pointer;
-  }
-
-  .checkbox-label input {
-    margin-right: 8px;
-    accent-color: var(--md-primary);
-  }
-
-  /* Charts */
-  .chart-container {
-    position: relative;
-    height: 400px;
-    width: 100%;
-  }
-
-  /* Loader */
-  #loader {
-    text-align: center;
-    padding: 40px;
-    font-size: 16px;
-    color: rgba(0,0,0,0.6);
-  }
-</style>
+<!-- Styles -->
+<link href="styles.css" rel="stylesheet">
 </head>
 <body>
 
 <header>
-  <h1>Visa Bulletin Priority Date Tracker</h1>
+  <h1>Visa Bulletin Tracker</h1>
+  <div class="subtitle">Predicting Priority Dates with Historical Data</div>
 </header>
 
 <div class="container">
   
-  <div id="loader">Loading data...</div>
+  <div id="loader">
+    <div class="spinner"></div>
+    <div>Loading data...</div>
+  </div>
 
   <div id="dashboard" style="display: none;">
-    <div class="card">
+    
+    <!-- Controls Section -->
+    <div class="glass-card">
       <h2 class="card-title">Filters</h2>
       <div class="controls-row">
         <div class="control-group">
           <label for="countrySelect">Country of Origin</label>
           <select id="countrySelect"></select>
-        </div>
-        <div class="control-group">
-          <label>Visa Categories</label>
-          <div class="checkbox-group" id="categoryCheckboxes">
-            <!-- Checkboxes injected here -->
-          </div>
         </div>
         <div class="control-group">
           <label for="tableSelect">Table Type</label>
@@ -183,208 +46,51 @@
             <option value="Dates_for_Filing">Dates for Filing (Table B)</option>
           </select>
         </div>
+        <div class="control-group" style="flex: 1;">
+          <label>Visa Categories</label>
+          <div class="checkbox-group" id="categoryCheckboxes">
+            <!-- Checkboxes injected here -->
+          </div>
+        </div>
       </div>
     </div>
 
-    <div class="card">
+    <!-- Chart Section -->
+    <div class="glass-card">
       <h2 class="card-title">Priority Date Movement</h2>
+      <div class="card-subtitle">Drag to Pan • Scroll to Zoom • Double Click to Reset</div>
       <div class="chart-container">
         <canvas id="pdChart"></canvas>
       </div>
     </div>
-  </div>
 
+    <!-- FAQ Section -->
+    <div class="glass-card">
+      <h2 class="card-title">Frequently Asked Questions</h2>
+      <div class="faq-grid">
+        <div class="faq-item">
+          <h3>What is a Priority Date?</h3>
+          <p>Your "place in line." It's the date the government received your immigration petition (e.g., I-130 or I-140/PERM). You must wait until your priority date is "current" to apply for a Green Card.</p>
+        </div>
+        <div class="faq-item">
+          <h3>Final Action (Table A) vs Filing (Table B)?</h3>
+          <p><strong>Table A</strong> dictates when an actual Green Card can be approved and issued. <strong>Table B</strong> dictates when you are allowed to submit your I-485 application (if USCIS accepts Table B for that month).</p>
+        </div>
+        <div class="faq-item">
+          <h3>What is Retrogression?</h3>
+          <p>Sometimes the demand for visas exceeds the annual supply limit. When this happens, the government moves the cut-off dates backward (retrogresses) to slow down applications.</p>
+        </div>
+        <div class="faq-item">
+          <h3>What do "C" and "U" mean?</h3>
+          <p><strong>C (Current)</strong>: There is no backlog. Anyone in this category can apply immediately.<br><strong>U (Unavailable)</strong>: No visas are available right now, usually because the annual cap has been hit.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
 </div>
 
-<script>
-let fullData = [];
-let countries = [];
-let categories = [];
-let chartInstance = null;
-
-const chartColors = [
-    '#6200EE', '#03DAC6', '#FF0266', '#FFDE03', '#00E676', '#FF9100'
-];
-
-async function loadData() {
-  Papa.parse('data/visa_bulletin_all.csv', {
-    download: true,
-    header: true,
-    skipEmptyLines: true,
-    complete: function(results) {
-      fullData = results.data;
-      processInitialData();
-    }
-  });
-}
-
-function processInitialData() {
-  const countrySet = new Set();
-  const catSet = new Set();
-  
-  fullData.forEach(row => {
-    countrySet.add(row.country);
-    catSet.add(row.category);
-  });
-
-  countries = Array.from(countrySet).sort();
-  categories = Array.from(catSet).sort();
-
-  // Populate Country Dropdown
-  const countrySelect = document.getElementById('countrySelect');
-  countries.forEach(c => {
-    const opt = document.createElement('option');
-    opt.value = c;
-    opt.textContent = c.replace(/_/g, ' ');
-    if (c === 'China') opt.selected = true;
-    countrySelect.appendChild(opt);
-  });
-
-  // Populate Category Checkboxes
-  const catDiv = document.getElementById('categoryCheckboxes');
-  categories.forEach((cat, idx) => {
-    const label = document.createElement('label');
-    label.className = 'checkbox-label';
-    const cb = document.createElement('input');
-    cb.type = 'checkbox';
-    cb.value = cat;
-    // Default select 2nd
-    if (cat === '2nd') cb.checked = true;
-    cb.addEventListener('change', updateChart);
-    
-    label.appendChild(cb);
-    label.appendChild(document.createTextNode(cat));
-    catDiv.appendChild(label);
-  });
-
-  document.getElementById('countrySelect').addEventListener('change', updateChart);
-  document.getElementById('tableSelect').addEventListener('change', updateChart);
-
-  document.getElementById('loader').style.display = 'none';
-  document.getElementById('dashboard').style.display = 'block';
-
-  // Ensure data is sorted
-  fullData.sort((a,b) => new Date(a.bulletin_date) - new Date(b.bulletin_date));
-
-  updateChart();
-}
-
-function updateChart() {
-  const selectedCountry = document.getElementById('countrySelect').value;
-  const selectedTable = document.getElementById('tableSelect').value;
-  
-  const checkboxes = document.querySelectorAll('#categoryCheckboxes input:checked');
-  const selectedCategories = Array.from(checkboxes).map(cb => cb.value);
-
-  const datasets = [];
-  
-  selectedCategories.forEach((cat, idx) => {
-      // Get historical data for this combination
-      const history = fullData.filter(d => d.country === selectedCountry && d.category === cat && d.table_type === selectedTable);
-      
-      const dataPoints = [];
-      history.forEach(row => {
-          if (row.is_current === "1" || row.is_unavailable === "1") return;
-          const pd = new Date(row.priority_date).getTime();
-          if (!isNaN(pd)) {
-              dataPoints.push({
-                  x: new Date(row.bulletin_date).getTime(),
-                  y: pd
-              });
-          }
-      });
-
-      datasets.push({
-          label: `${cat} (Historical)`,
-          data: dataPoints,
-          borderColor: chartColors[idx % chartColors.length],
-          backgroundColor: chartColors[idx % chartColors.length],
-          fill: false,
-          tension: 0.1,
-          pointRadius: 2
-      });
-
-      // Get predictions using our isolated function
-      if (window.predictFutureCutoff) {
-          const predictions = window.predictFutureCutoff(fullData, selectedTable, cat, selectedCountry, 12);
-          if (predictions && predictions.length > 0) {
-              const projPoints = [];
-              
-              // Connect the last historical point
-              if (dataPoints.length > 0) {
-                  projPoints.push(dataPoints[dataPoints.length - 1]);
-              }
-              
-              predictions.forEach(p => {
-                  projPoints.push({
-                      x: new Date(p.bulletin_date).getTime(),
-                      y: p.priority_date
-                  });
-              });
-
-              datasets.push({
-                  label: `${cat} (Projected)`,
-                  data: projPoints,
-                  borderColor: chartColors[idx % chartColors.length],
-                  backgroundColor: 'transparent',
-                  borderDash: [5, 5],
-                  fill: false,
-                  tension: 0.1,
-                  pointRadius: 3,
-                  pointStyle: 'rect'
-              });
-          }
-      }
-  });
-
-  renderChart(datasets);
-}
-
-function renderChart(datasets) {
-    const ctx = document.getElementById('pdChart').getContext('2d');
-    
-    if (chartInstance) {
-        chartInstance.destroy();
-    }
-
-    chartInstance = new Chart(ctx, {
-        type: 'line',
-        data: { datasets: datasets },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                x: {
-                    type: 'time',
-                    time: { unit: 'month' },
-                    title: { display: true, text: 'Bulletin Date' }
-                },
-                y: {
-                    type: 'time',
-                    time: { unit: 'month' },
-                    title: { display: true, text: 'Priority Date' }
-                }
-            },
-            plugins: {
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            let label = context.dataset.label || '';
-                            if (label) label += ': ';
-                            if (context.parsed.y !== null) {
-                                label += new Date(context.parsed.y).toISOString().split('T')[0];
-                            }
-                            return label;
-                        }
-                    }
-                }
-            }
-        }
-    });
-}
-
-// Init
-window.onload = loadData;
-</script>
+<script src="prediction.js"></script>
+<script src="app.js"></script>
 </body>
 </html>
