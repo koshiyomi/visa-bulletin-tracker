@@ -289,6 +289,14 @@ const renderChart = (datasets, yAxisMetric) => {
                     }
                 },
                 tooltip: {
+                    filter: function(tooltipItem) {
+                        // The 0th index of any Projected dataset is the anchor point shared with the Historical dataset.
+                        // We hide it so the tooltip doesn't show duplicate identical entries when hovering over the junction.
+                        if (tooltipItem.dataset.label.includes('(Projected)') && tooltipItem.dataIndex === 0) {
+                            return false;
+                        }
+                        return true;
+                    },
                     backgroundColor: 'rgba(15, 23, 42, 0.9)',
                     titleColor: '#fff',
                     bodyColor: '#cbd5e1',
