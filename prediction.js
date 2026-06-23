@@ -61,7 +61,17 @@ window.predictFutureCutoff = (history, tableType, category, country, monthsAhead
     : 30;
 
   const predictions = [];
-  const lastRecord = segment.at(-1); // Modern array syntax to get last item
+  
+  // Find the last valid record (not U or C) to serve as our anchor
+  let lastRecord = null;
+  for (let i = segment.length - 1; i >= 0; i--) {
+      if (segment[i].is_current !== "1" && segment[i].is_unavailable !== "1") {
+          lastRecord = segment[i];
+          break;
+      }
+  }
+  
+  if (!lastRecord) return []; // If there are literally no valid records in history
   
   // Calculate Arbitrage Multiplier for China (EB-1, EB-2, EB-3)
   let arbitrageMultiplier = 1.0;
@@ -97,11 +107,6 @@ window.predictFutureCutoff = (history, tableType, category, country, monthsAhead
       
       if (Number.isNaN(arbitrageMultiplier)) arbitrageMultiplier = 1.0;
       arbitrageMultiplier = Math.max(0.3, Math.min(2.5, arbitrageMultiplier));
-  }
-  
-  // If the category is currently C or U, we cannot meaningfully project a date numerically
-  if (lastRecord.is_current === "1" || lastRecord.is_unavailable === "1") {
-      return []; 
   }
 
   // Calculate average wait time to determine projection length
@@ -156,8 +161,26 @@ window.predictFutureCutoff = (history, tableType, category, country, monthsAhead
     } else if (targetYear % 4 === 1) {
         electionMultiplier = 0.90; // Post-election transition slowdown (10% penalty)
     }
+    
+    // 3. Economy / Macro factors (especially for India)
+    let economyMultiplier = 1.0;
+    if (externalFactors && typeof externalFactors.qqq_yoy_pct === 'number' && !Number.isNaN(externalFactors.qqq_yoy_pct)) {
+        // High QQQ = tech hiring boom = more PERM/H1B = slower movement.
+        // Low QQQ = tech layoffs = fewer applicants = faster movement.
+        let qqqImpact = 1.0 - (externalFactors.qqq_yoy_pct / 100.0) * 0.4;
+        let unempImpact = 1.0 + ((externalFactors.unemployment_yoy_diff || 0) * 0.1);
+        
+        qqqImpact = Math.max(0.6, Math.min(1.4, qqqImpact));
+        unempImpact = Math.max(0.8, Math.min(1.2, unempImpact));
+        
+        if (country === 'India') {
+            economyMultiplier = qqqImpact * unempImpact;
+        } else {
+            economyMultiplier = 1.0 + ((qqqImpact * unempImpact - 1.0) * 0.25); // Minor effect on ROW/China
+        }
+    }
 
-    // 3. Blending (Mean Reversion)
+    // 4. Blending (Mean Reversion)
     const blendFactor = Math.max(0.1, 1.0 - (i / 12) * 0.9);
     
     // Apply Arbitrage multiplier without aggressive decay
@@ -177,7 +200,7 @@ window.predictFutureCutoff = (history, tableType, category, country, monthsAhead
     
     const blendedBase = (adjustedRecentAvg * blendFactor) + (adjustedMacroAvg * (1 - blendFactor));
 
-    const blendedDays = blendedBase * seasonMultiplier * electionMultiplier;
+    const blendedDays = blendedBase * seasonMultiplier * electionMultiplier * economyMultiplier;
 
     // Apply external factor boost if provided (for future API expansion)
     const boostMultiplier = externalFactors?.boost ?? 1;

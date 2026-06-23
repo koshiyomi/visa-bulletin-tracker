@@ -32,7 +32,7 @@ async def main():
                 
                 const res = {};
                 for (const cat of ['1st', '2nd', '3rd']) {
-                    const preds = window.predictFutureCutoff(fullData, 'Final_Action', cat, 'China', 36, null);
+                    const preds = window.predictFutureCutoff(fullData, 'Final_Action', cat, 'India', 36, null);
                     if (preds.length > 0) {
                         res[cat] = [
                             preds[11] ? new Date(preds[11].priority_date).toISOString().split('T')[0] : null,

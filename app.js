@@ -28,10 +28,21 @@ const categoryMap = {
 // Unique simplified categories to render as filter toggles
 const simplifiedCategories = ["EB-1", "EB-2", "EB-3", "EB-3 Other", "EB-4", "EB-5"];
 
+let macroFactors = null;
+
 /**
  * Fetches and parses the CSV data file using PapaParse.
  */
 const loadData = async () => {
+  try {
+      const macroResp = await fetch('data/macro.json');
+      if (macroResp.ok) {
+          macroFactors = await macroResp.json();
+      }
+  } catch (e) {
+      console.warn("Failed to load macro factors", e);
+  }
+
   Papa.parse('data/visa_bulletin_all.csv', {
     download: true,
     header: true,
@@ -195,9 +206,9 @@ const updateChart = () => {
           pointHoverRadius: 5
       });
 
-      // Integrate predictive projections
+          // Integrate predictive projections
       if (window.predictFutureCutoff) {
-          const predictions = window.predictFutureCutoff(fullData, selectedTable, actualRawCategory, selectedCountry, 12);
+          const predictions = window.predictFutureCutoff(fullData, selectedTable, actualRawCategory, selectedCountry, 36, macroFactors);
           
           if (predictions?.length > 0) { // Optional chaining
               const projPoints = [];
