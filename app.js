@@ -259,6 +259,9 @@ const updateLanguage = () => {
             el.textContent = key;
         }
     });
+    
+    // Re-render custom selects to reflect translated text
+    initCustomSelects();
 };
 
 /**
@@ -824,6 +827,9 @@ const renderChart = (datasets, yAxisMetric) => {
             }
         }
     });
+    
+    // Re-render custom selects to reflect translated text
+    initCustomSelects();
 };
 
 // Ensure chart resets zoom on double click
@@ -857,4 +863,88 @@ window.addEventListener('resize', () => {
         }
         chartInstance.update('none');
     }
+});
+
+// --- Custom Select UI ---
+function initCustomSelects() {
+    const selects = ['countrySelect', 'tableSelect', 'yAxisSelect', 'langToggle'];
+    selects.forEach(id => {
+        const originalSelect = document.getElementById(id);
+        if (!originalSelect) return;
+        
+        // Remove existing custom container if any
+        if (originalSelect.nextElementSibling && originalSelect.nextElementSibling.classList.contains('custom-select-container')) {
+            originalSelect.nextElementSibling.remove();
+        }
+
+        originalSelect.style.display = 'none';
+
+        const container = document.createElement('div');
+        container.className = 'custom-select-container';
+
+        const trigger = document.createElement('div');
+        trigger.className = 'custom-select-trigger';
+        
+        const triggerText = document.createElement('span');
+        // Show current selected text
+        const selectedOpt = originalSelect.options[originalSelect.selectedIndex];
+        triggerText.textContent = selectedOpt ? selectedOpt.text : '';
+        trigger.appendChild(triggerText);
+        
+        container.appendChild(trigger);
+
+        const optionsDiv = document.createElement('div');
+        optionsDiv.className = 'custom-select-options';
+
+        Array.from(originalSelect.options).forEach((opt, idx) => {
+            const optDiv = document.createElement('div');
+            optDiv.className = 'custom-select-option' + (idx === originalSelect.selectedIndex ? ' selected' : '');
+            optDiv.textContent = opt.text;
+            
+            optDiv.addEventListener('click', (e) => {
+                e.stopPropagation();
+                originalSelect.selectedIndex = idx;
+                triggerText.textContent = opt.text;
+                
+                // Update selected styling
+                Array.from(optionsDiv.children).forEach(c => c.classList.remove('selected'));
+                optDiv.classList.add('selected');
+                
+                container.classList.remove('open');
+                
+                // Trigger change event to run app logic
+                originalSelect.dispatchEvent(new Event('change'));
+            });
+            
+            optionsDiv.appendChild(optDiv);
+        });
+
+        container.appendChild(optionsDiv);
+
+        // Toggle dropdown
+        trigger.addEventListener('click', (e) => {
+            e.stopPropagation();
+            // Close other dropdowns
+            document.querySelectorAll('.custom-select-container.open').forEach(c => {
+                if (c !== container) c.classList.remove('open');
+            });
+            container.classList.toggle('open');
+            
+            // Scroll to selected
+            if (container.classList.contains('open')) {
+                const selectedEl = optionsDiv.querySelector('.selected');
+                if (selectedEl) {
+                    optionsDiv.scrollTop = selectedEl.offsetTop - optionsDiv.offsetTop - 4;
+                }
+            }
+        });
+
+        originalSelect.parentNode.insertBefore(container, originalSelect.nextSibling);
+    });
+}
+
+document.addEventListener('click', () => {
+    document.querySelectorAll('.custom-select-container.open').forEach(c => {
+        c.classList.remove('open');
+    });
 });
