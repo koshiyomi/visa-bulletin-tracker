@@ -635,7 +635,10 @@ const externalTooltipHandler = (context) => {
     let tooltipEl = document.getElementById('mobileTooltip');
     if (!tooltipEl) return;
 
-
+    if (window.innerWidth >= 768) {
+        tooltipEl.style.display = 'none';
+        return;
+    }
 
     const tooltipModel = context.tooltip;
 
@@ -732,7 +735,7 @@ const renderChart = (datasets, yAxisMetric) => {
                             year: "yy"
                         }
                     },
-                    title: { display: false },
+                    title: { display: window.innerWidth >= 768, text: isWaitTime ? 'Wait Time (Years)' : 'Priority Date', color: '#94a3b8' },
                     grid: { color: 'rgba(255,255,255,0.1)' },
                     ticks: { 
                         color: '#94a3b8', 
@@ -754,7 +757,7 @@ const renderChart = (datasets, yAxisMetric) => {
                     }
                 },
                 tooltip: {
-                    enabled: false,
+                    enabled: window.innerWidth >= 768,
                     external: externalTooltipHandler,
                     backgroundColor: 'rgba(15, 23, 42, 0.85)',
                     titleColor: '#f8fafc',
@@ -829,7 +832,15 @@ window.onload = loadData;
 
 window.addEventListener('resize', () => {
     if (chartInstance) {
-        chartInstance.options.scales.y.ticks.maxTicksLimit = window.innerWidth <= 768 ? 6 : 10;
+        const isDesktop = window.innerWidth >= 768;
+        chartInstance.options.plugins.tooltip.enabled = isDesktop;
+        chartInstance.options.scales.y.title.display = isDesktop;
+        chartInstance.options.scales.y.ticks.maxTicksLimit = isDesktop ? 10 : 6;
+        
+        let tooltipEl = document.getElementById('mobileTooltip');
+        if (tooltipEl && isDesktop) {
+            tooltipEl.style.display = 'none';
+        }
         chartInstance.update('none');
     }
 });
