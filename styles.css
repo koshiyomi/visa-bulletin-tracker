@@ -19,8 +19,13 @@
   box-sizing: border-box;
 }
 
+html, body {
+  overflow-x: hidden;
+}
+
 body {
   margin: 0;
+  min-height: -webkit-fill-available;
   padding: 0;
   background: var(--bg-gradient);
   color: var(--text-primary);
@@ -87,6 +92,7 @@ header h1 {
 }
 
 .glass-btn {
+  -webkit-appearance: none;
   background: linear-gradient(135deg, var(--glass-bg), rgba(255, 255, 255, 0.1));
   border: 1px solid var(--glass-border);
   color: var(--text-primary);
@@ -96,6 +102,7 @@ header h1 {
   font-family: inherit;
   font-weight: 600;
   backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   transition: all 0.3s ease;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
@@ -118,6 +125,7 @@ header h1 {
 .glass-card {
   background: linear-gradient(135deg, var(--glass-bg) 0%, rgba(255, 255, 255, 0.01) 100%);
   backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
   -webkit-backdrop-filter: blur(20px) saturate(150%);
   border: 1px solid var(--glass-border);
   border-top-color: var(--glass-highlight);
@@ -212,6 +220,7 @@ select option {
   font-size: 0.95rem;
   transition: all 0.2s ease;
   user-select: none;
+  -webkit-user-select: none;
 }
 
 .checkbox-label input {
@@ -223,9 +232,11 @@ select option {
 }
 
 .checkbox-label.checked {
+  background: var(--cat-color);
   background: color-mix(in srgb, var(--cat-color) 40%, transparent);
   border-color: var(--cat-color);
   color: #fff;
+  box-shadow: 0 0 15px var(--cat-color);
   box-shadow: 0 0 15px color-mix(in srgb, var(--cat-color) 30%, transparent);
 }
 
@@ -298,6 +309,7 @@ select option {
   min-width: 150px;
   background: linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.01) 100%);
   backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--glass-border);
   border-top-color: rgba(255, 255, 255, 0.2);
@@ -466,6 +478,7 @@ header {
 .custom-select-container {
   position: relative;
   user-select: none;
+  -webkit-user-select: none;
   min-width: 180px;
   width: 100%;
 }
@@ -507,6 +520,7 @@ header {
   width: 100%;
   background: rgba(15, 23, 42, 0.95);
   backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--glass-border);
   border-radius: 12px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
@@ -536,12 +550,14 @@ header {
 }
 
 .custom-select-option:hover {
-  background: color-mix(in srgb, var(--accent) 20%, transparent);
+  background: rgba(139, 92, 246, 0.2);
+    background: color-mix(in srgb, var(--accent) 20%, transparent);
   color: #fff;
 }
 
 .custom-select-option.selected {
-  background: color-mix(in srgb, var(--accent) 40%, transparent);
+  background: rgba(139, 92, 246, 0.4);
+    background: color-mix(in srgb, var(--accent) 40%, transparent);
   color: #fff;
   font-weight: 600;
 }
@@ -588,6 +604,7 @@ header {
     }
 }
 .lang-trigger {
+  -webkit-appearance: none;
     width: 44px;
     height: 44px;
     border-radius: 50%;
@@ -614,6 +631,7 @@ header {
     width: 140px;
     background: rgba(15, 23, 42, 0.95);
     backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
     border: 1px solid var(--glass-border);
     border-radius: 12px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
@@ -640,10 +658,12 @@ header {
     text-align: left;
 }
 .lang-option:hover {
+    background: rgba(139, 92, 246, 0.2);
     background: color-mix(in srgb, var(--accent) 20%, transparent);
     color: #fff;
 }
 .lang-option.selected {
+    background: rgba(139, 92, 246, 0.4);
     background: color-mix(in srgb, var(--accent) 40%, transparent);
     color: #fff;
     font-weight: 600;
