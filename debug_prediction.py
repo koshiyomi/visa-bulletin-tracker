@@ -1,15 +1,8 @@
 import csv
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
-import json
-import os
 
 DAY_MS = 86400000
-
-macro_factors = None
-if os.path.exists('data/macro.json'):
-    with open('data/macro.json', 'r') as f:
-        macro_factors = json.load(f)
 
 with open('data/visa_bulletin_all.csv', 'r') as f:
     reader = csv.DictReader(f)
@@ -77,22 +70,8 @@ def simulate(table, cat, country):
         if targetYear % 4 == 0: electionMultiplier = 0.85
         elif targetYear % 4 == 1: electionMultiplier = 0.90
             
-        economyMultiplier = 1.0
-        if macro_factors:
-            qqqImpact = 1.0 - (macro_factors.get("qqq_yoy_pct", 0) / 100.0) * 0.4
-            unempImpact = 1.0 + (macro_factors.get("unemployment_yoy_diff", 0) * 0.1)
-            
-            qqqImpact = max(0.6, min(1.4, qqqImpact))
-            unempImpact = max(0.8, min(1.2, unempImpact))
-            
-            if country == 'India':
-                economyMultiplier = qqqImpact * unempImpact
-            else:
-                economyMultiplier = 1.0 + ((qqqImpact * unempImpact - 1.0) * 0.25)
-                
         blendFactor = max(0.1, 1.0 - (i / 12) * 0.9)
-        adjustedMacroAvg = max(macroAvg, 0) * economyMultiplier
-        blendedBase = (max(recentAvg, 0) * blendFactor) + (adjustedMacroAvg * (1 - blendFactor))
+        blendedBase = (max(recentAvg, 0) * blendFactor) + (max(macroAvg, 0) * (1 - blendFactor))
         
         blendedDays = blendedBase * seasonMultiplier * electionMultiplier
         
@@ -100,9 +79,9 @@ def simulate(table, cat, country):
         
         print(f"{last_bulletin.strftime('%Y-%m'):<10} | "
               f"{blendFactor*100:3.0f}% R / {(1-blendFactor)*100:3.0f}% M | "
-              f"{seasonMultiplier*electionMultiplier*economyMultiplier:<10.2f} | "
+              f"{seasonMultiplier*electionMultiplier:<10.2f} | "
               f"{int(blendedDays):<10} | "
               f"{last_pd.strftime('%Y-%m-%d')}")
 
 simulate('Final_Action', '2nd', 'China')
-simulate('Final_Action', '2nd', 'India')
+simulate('Final_Action', '3rd', 'China')
