@@ -63,6 +63,42 @@ window.predictFutureCutoff = (history, tableType, category, country, monthsAhead
   const predictions = [];
   const lastRecord = segment.at(-1); // Modern array syntax to get last item
   
+  // Calculate Arbitrage Multiplier for China (EB-1, EB-2, EB-3)
+  let arbitrageMultiplier = 1.0;
+  if (country === 'China' && (category === '1st' || category === '2nd' || category === '3rd')) {
+      const anchorDate = lastRecord.bulletin_date;
+      const eb1Seg = history.find(d => d.table_type === tableType && d.category === '1st' && d.normalized_country === country && d.bulletin_date === anchorDate);
+      const eb2Seg = history.find(d => d.table_type === tableType && d.category === '2nd' && d.normalized_country === country && d.bulletin_date === anchorDate);
+      const eb3Seg = history.find(d => d.table_type === tableType && d.category === '3rd' && d.normalized_country === country && d.bulletin_date === anchorDate);
+      
+      const bullDate = new Date(anchorDate).getTime();
+      
+      const getWaitDays = (seg) => {
+          if (!seg || seg.is_unavailable === "1" || seg.is_current === "1") return 0;
+          const pdTime = new Date(seg.priority_date).getTime();
+          if (Number.isNaN(pdTime)) return 0;
+          return (bullDate - pdTime) / DAY_MS;
+      };
+
+      const eb1WaitDays = getWaitDays(eb1Seg);
+      const eb2WaitDays = getWaitDays(eb2Seg);
+      const eb3WaitDays = getWaitDays(eb3Seg);
+      
+      const eb1_eb2_spread = (eb1WaitDays - eb2WaitDays) / 365.25;
+      const eb2_eb3_spread = (eb2WaitDays - eb3WaitDays) / 365.25;
+      
+      if (category === '1st') {
+          arbitrageMultiplier = 1.0 + (eb1_eb2_spread * 0.60);
+      } else if (category === '2nd') {
+          arbitrageMultiplier = 1.0 + (eb2_eb3_spread * 0.60) - (eb1_eb2_spread * 0.60);
+      } else if (category === '3rd') {
+          arbitrageMultiplier = 1.0 - (eb2_eb3_spread * 0.60);
+      }
+      
+      if (Number.isNaN(arbitrageMultiplier)) arbitrageMultiplier = 1.0;
+      arbitrageMultiplier = Math.max(0.3, Math.min(2.5, arbitrageMultiplier));
+  }
+  
   // If the category is currently C or U, we cannot meaningfully project a date numerically
   if (lastRecord.is_current === "1" || lastRecord.is_unavailable === "1") {
       return []; 
@@ -122,11 +158,24 @@ window.predictFutureCutoff = (history, tableType, category, country, monthsAhead
     }
 
     // 3. Blending (Mean Reversion)
-    // We smoothly transition from short-term momentum to the historical macro trend.
-    // In Month 1, we rely heavily on recent momentum (e.g. 90% recent, 10% macro).
-    // By Month 12, we transition to mostly macro trend (e.g. 10% recent, 90% macro).
-    const blendFactor = Math.max(0.1, 1.0 - (i / 12) * 0.9); // Starts near 1.0, decays to 0.1 at 12 months
-    const blendedBase = (Math.max(recentAvg, 0) * blendFactor) + (Math.max(macroAvg, 0) * (1 - blendFactor));
+    const blendFactor = Math.max(0.1, 1.0 - (i / 12) * 0.9);
+    
+    // Apply Arbitrage multiplier without aggressive decay
+    // If the spread is large today, the macro trend of the category will permanently shift 
+    // until it reaches equilibrium.
+    const currentArbitrage = arbitrageMultiplier;
+    
+    // Apply Arbitrage multiplier
+    const adjustedMacroAvg = macroAvg * currentArbitrage;
+    
+    // If arbitrage is strongly positive (>1.2), prevent recentAvg from trapping us at 0
+    let baseRecent = recentAvg;
+    if (currentArbitrage > 1.2 && recentAvg < macroAvg * 0.5) {
+        baseRecent = macroAvg * 0.5; // Pent-up demand breaks the zero-momentum trap
+    }
+    const adjustedRecentAvg = baseRecent * currentArbitrage;
+    
+    const blendedBase = (adjustedRecentAvg * blendFactor) + (adjustedMacroAvg * (1 - blendFactor));
 
     const blendedDays = blendedBase * seasonMultiplier * electionMultiplier;
 
