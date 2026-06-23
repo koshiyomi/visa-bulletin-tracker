@@ -84,6 +84,158 @@ const i18n = {
             "Unknown": "未知",
             "Vietnam": "越南"
         }
+    },
+    "zh-TW": {
+        title: "排期預測追蹤",
+        subtitle: "基於歷史數據的優先日排期預測",
+        filters: "篩選器",
+        country: "出生地國家",
+        table_type: "排期表類型",
+        table_a: "最終裁定日 (表 A)",
+        table_b: "遞交申請日 (表 B)",
+        y_axis: "Y軸指標",
+        y_pd: "優先日 (Priority Date)",
+        y_wait: "等待時間 (年)",
+        visa_categories: "簽證類別",
+        chart_title: "排期走勢與預測",
+        chart_subtitle: "拖拽平移 • 滾動縮放 • 雙擊還原",
+        faq_title: "常見問題解答 (FAQ)",
+        latest_bulletin: "最新排期表",
+        faq_1_q: "什麼是優先日 (Priority Date)？",
+        faq_1_a: "你的“排隊號”。這是移民局收到你的移民申請（如 I-130 或 I-140/PERM）的日期。你需要等到你的優先日“排到”（Current）才能申請綠卡。",
+        faq_2_q: "表A (Final Action) 和 表B (Filing) 的區別？",
+        faq_2_a: "<strong>表 A</strong> 決定了你的綠卡何時能被批准和簽發。<strong>表 B</strong> 決定了你何時可以遞交 I-485 身份轉換申請（前提是當月 USCIS 宣佈啟用表 B）。",
+        faq_3_q: "什麼是排期倒退 (Retrogression)？",
+        faq_3_a: "有時候簽證需求量會遠超年度供應上限。當這種情況發生時，政府會將截止日期向後推（倒退）以減緩申請速度。",
+        faq_4_q: "\"C\" 和 \"U\" 分別代表什麼？",
+        faq_4_a: "<strong>C (Current/當前)</strong>: 表示沒有積壓，目前不需要排期，任何人都可以立刻申請。<br><strong>U (Unavailable/不可用)</strong>: 目前沒有可用的簽證名額，通常是因為年度配額已經用盡。",
+        faq_5_q: "模型如何分別預測中國和印度的排期？",
+        faq_5_a: "預測模型對印度應用了 100% 的經濟乘數（受宏觀科技裁員/擴招嚴重影響），但對中國大陸和全球其他地區僅產生 25% 的溢出影響。此外，模型還會根據各類別排期差（例如 EB-2 相比 EB-3 的差距）動態計算降級和升級帶來的分流加速效應。",
+        countries: {
+            "All Chargeability Areas": "全球 (除特定國家外)",
+            "China": "中國大陸",
+            "Dominican Republic": "多明尼加共和國",
+            "El Salvador/Guatemala/Honduras": "薩爾瓦多/危地馬拉/洪都拉斯",
+            "India": "印度",
+            "Mexico": "墨西哥",
+            "Philippines": "菲律賓",
+            "Unknown": "未知",
+            "Vietnam": "越南"
+        }
+    },
+    es: {
+        title: "Rastreador de Boletín de Visas",
+        subtitle: "Predicción de Fechas de Prioridad con Datos Históricos",
+        filters: "Filtros",
+        country: "País de Origen",
+        table_type: "Tipo de Tabla",
+        table_a: "Acción Final (Tabla A)",
+        table_b: "Fechas para Presentación (Tabla B)",
+        y_axis: "Métrica del Eje Y",
+        y_pd: "Fecha de Prioridad",
+        y_wait: "Tiempo de Espera (Años)",
+        visa_categories: "Categorías de Visas",
+        chart_title: "Movimiento de Fecha de Prioridad",
+        chart_subtitle: "Arrastra para desplazar • Desplaza para hacer zoom • Doble clic para reiniciar",
+        faq_title: "Preguntas Frecuentes",
+        latest_bulletin: "Último Boletín",
+        faq_1_q: "¿Qué es una Fecha de Prioridad?",
+        faq_1_a: "Tu \"lugar en la fila\". Es la fecha en que el gobierno recibió tu petición de inmigración (ej. I-130 o I-140/PERM). Debes esperar hasta que tu fecha de prioridad esté \"vigente\" (Current) para solicitar una Tarjeta Verde.",
+        faq_2_q: "¿Acción Final (Tabla A) vs Presentación (Tabla B)?",
+        faq_2_a: "<strong>Tabla A</strong> dicta cuándo se puede aprobar y emitir una Tarjeta Verde real. <strong>Tabla B</strong> dicta cuándo puedes enviar tu solicitud I-485 (si USCIS acepta la Tabla B ese mes).",
+        faq_3_q: "¿Qué es el Retroceso?",
+        faq_3_a: "A veces la demanda de visas excede el límite de suministro anual. Cuando esto sucede, el gobierno retrasa las fechas límite (retrocede) para ralentizar las solicitudes.",
+        faq_4_q: "¿Qué significan \"C\" y \"U\"?",
+        faq_4_a: "<strong>C (Vigente/Current)</strong>: No hay retraso. Cualquiera en esta categoría puede aplicar de inmediato.<br><strong>U (No Disponible)</strong>: No hay visas disponibles en este momento, generalmente porque se ha alcanzado el límite anual.",
+        faq_5_q: "¿Cómo se predicen de manera diferente India y China?",
+        faq_5_a: "El modelo de predicción aplica un multiplicador económico del 100% a India (debido al alto volumen en tecnología/H1B), pero solo un efecto de derrame del 25% para China y el Resto del Mundo. Los márgenes entre categorías (ej. EB-2 vs EB-3) también influyen dinámicamente en las velocidades de actualización/degradación.",
+        countries: {
+            "All Chargeability Areas": "Áreas de Carga Global",
+            "China": "China",
+            "Dominican Republic": "República Dominicana",
+            "El Salvador/Guatemala/Honduras": "El Salvador/Guatemala/Honduras",
+            "India": "India",
+            "Mexico": "México",
+            "Philippines": "Filipinas",
+            "Unknown": "Desconocido",
+            "Vietnam": "Vietnam"
+        }
+    },
+    vi: {
+        title: "Trình theo dõi Visa Bulletin",
+        subtitle: "Dự đoán ngày ưu tiên với dữ liệu lịch sử",
+        filters: "Bộ lọc",
+        country: "Quốc gia Xuất xứ",
+        table_type: "Loại Bảng",
+        table_a: "Hành động Cuối cùng (Bảng A)",
+        table_b: "Ngày Nộp đơn (Bảng B)",
+        y_axis: "Chỉ số Trục Y",
+        y_pd: "Ngày Ưu tiên",
+        y_wait: "Thời gian chờ (Năm)",
+        visa_categories: "Hạng mục Visa",
+        chart_title: "Biến động Ngày Ưu tiên",
+        chart_subtitle: "Kéo để di chuyển • Cuộn để thu phóng • Nhấp đúp để đặt lại",
+        faq_title: "Câu hỏi Thường gặp",
+        latest_bulletin: "Bản tin Mới nhất",
+        faq_1_q: "Ngày Ưu tiên là gì?",
+        faq_1_a: "\"Vị trí xếp hàng\" của bạn. Đó là ngày chính phủ nhận được đơn xin nhập cư của bạn (ví dụ: I-130 hoặc I-140/PERM). Bạn phải đợi cho đến khi ngày ưu tiên của bạn \"đáo hạn\" (Current) để xin Thẻ Xanh.",
+        faq_2_q: "Hành động Cuối cùng (Bảng A) và Nộp đơn (Bảng B)?",
+        faq_2_a: "<strong>Bảng A</strong> quy định thời điểm một Thẻ Xanh thực tế có thể được phê duyệt và cấp. <strong>Bảng B</strong> quy định thời điểm bạn được phép nộp đơn I-485 (nếu USCIS chấp nhận Bảng B cho tháng đó).",
+        faq_3_q: "Thụt lùi (Retrogression) là gì?",
+        faq_3_a: "Đôi khi nhu cầu về thị thực vượt quá giới hạn cung cấp hàng năm. Khi điều này xảy ra, chính phủ lùi lại ngày giới hạn (thụt lùi) để làm chậm quá trình nộp đơn.",
+        faq_4_q: "\"C\" và \"U\" nghĩa là gì?",
+        faq_4_a: "<strong>C (Hiện tại/Current)</strong>: Không có tồn đọng. Bất kỳ ai trong hạng mục này đều có thể đăng ký ngay lập tức.<br><strong>U (Không có sẵn)</strong>: Hiện tại không có thị thực nào, thường là do đã đạt đến giới hạn hàng năm.",
+        faq_5_q: "Ấn Độ và Trung Quốc được dự đoán khác nhau như thế nào?",
+        faq_5_a: "Mô hình dự đoán áp dụng hệ số nhân kinh tế 100% cho Ấn Độ (do số lượng lớn trong lĩnh vực công nghệ/H1B), nhưng chỉ có tác động lan tỏa 25% đối với Trung Quốc và Phần còn lại của Thế giới. Khoảng cách giữa các hạng mục (ví dụ: EB-2 so với EB-3) cũng ảnh hưởng linh hoạt đến tốc độ chuyển đổi hồ sơ.",
+        countries: {
+            "All Chargeability Areas": "Tất cả các khu vực",
+            "China": "Trung Quốc",
+            "Dominican Republic": "Cộng hòa Dominica",
+            "El Salvador/Guatemala/Honduras": "El Salvador/Guatemala/Honduras",
+            "India": "Ấn Độ",
+            "Mexico": "Mexico",
+            "Philippines": "Philippines",
+            "Unknown": "Không xác định",
+            "Vietnam": "Việt Nam"
+        }
+    },
+    hi: {
+        title: "वीज़ा बुलेटिन ट्रैकर",
+        subtitle: "ऐतिहासिक डेटा के साथ प्राथमिकता तिथियों की भविष्यवाणी",
+        filters: "फ़िल्टर",
+        country: "मूल देश",
+        table_type: "तालिका प्रकार",
+        table_a: "अंतिम कार्रवाई (तालिका A)",
+        table_b: "दाखिल करने की तिथियां (तालिका B)",
+        y_axis: "Y-अक्ष मीट्रिक",
+        y_pd: "प्राथमिकता तिथि (Priority Date)",
+        y_wait: "प्रतीक्षा समय (वर्ष)",
+        visa_categories: "वीज़ा श्रेणियां",
+        chart_title: "प्राथमिकता तिथि संचलन",
+        chart_subtitle: "पैन करने के लिए खींचें • ज़ूम करने के लिए स्क्रॉल करें • रीसेट करने के लिए डबल क्लिक करें",
+        faq_title: "अक्सर पूछे जाने वाले प्रश्न",
+        latest_bulletin: "नवीनतम बुलेटिन",
+        faq_1_q: "प्राथमिकता तिथि (Priority Date) क्या है?",
+        faq_1_a: "लाइन में आपका \"स्थान\"। यह वह तिथि है जब सरकार को आपकी आप्रवास याचिका (उदा., I-130 या I-140/PERM) प्राप्त हुई थी। आपको ग्रीन कार्ड के लिए आवेदन करने के लिए अपनी प्राथमिकता तिथि के \"वर्तमान\" (Current) होने तक प्रतीक्षा करनी होगी।",
+        faq_2_q: "अंतिम कार्रवाई (तालिका A) बनाम दाखिल करना (तालिका B)?",
+        faq_2_a: "<strong>तालिका A</strong> यह निर्धारित करती है कि वास्तविक ग्रीन कार्ड कब स्वीकृत और जारी किया जा सकता है। <strong>तालिका B</strong> यह निर्धारित करती है कि आपको अपना I-485 आवेदन कब जमा करने की अनुमति है (यदि USCIS उस महीने के लिए तालिका B स्वीकार करता है)।",
+        faq_3_q: "प्रतिगमन (Retrogression) क्या है?",
+        faq_3_a: "कभी-कभी वीज़ा की मांग वार्षिक आपूर्ति सीमा से अधिक हो जाती है। जब ऐसा होता है, तो सरकार आवेदनों को धीमा करने के लिए कट-ऑफ तिथियों को पीछे (प्रतिगामी) ले जाती है।",
+        faq_4_q: "\"C\" और \"U\" का क्या अर्थ है?",
+        faq_4_a: "<strong>C (वर्तमान/Current)</strong>: कोई बैकलॉग नहीं है। इस श्रेणी का कोई भी व्यक्ति तुरंत आवेदन कर सकता है।<br><strong>U (अनुपलब्ध)</strong>: अभी कोई वीज़ा उपलब्ध नहीं है, आमतौर पर इसलिए क्योंकि वार्षिक सीमा पूरी हो चुकी है।",
+        faq_5_q: "भारत और चीन के लिए अलग-अलग भविष्यवाणी कैसे की जाती है?",
+        faq_5_a: "भविष्यवाणी मॉडल भारत पर 100% आर्थिक गुणक लागू करता है (तकनीक/H1B में उच्च मात्रा के कारण), लेकिन चीन और शेष विश्व के लिए केवल 25% स्पिलओवर प्रभाव। श्रेणी प्रसार (उदा., EB-2 बनाम EB-3) भी गतिशील रूप से अपग्रेड/डाउनग्रेड गति को प्रभावित करते हैं।",
+        countries: {
+            "All Chargeability Areas": "शेष विश्व (Rest of World)",
+            "China": "चीन",
+            "Dominican Republic": "डोमिनिकन गणराज्य",
+            "El Salvador/Guatemala/Honduras": "अल साल्वाडोर/ग्वाटेमाला/होंडुरास",
+            "India": "भारत",
+            "Mexico": "मेक्सिको",
+            "Philippines": "फिलीपींस",
+            "Unknown": "अज्ञात",
+            "Vietnam": "वियतनाम"
+        }
     }
 };
 let currentLang = localStorage.getItem('lang') || 'en';
@@ -268,8 +420,10 @@ const processInitialData = () => {
   });
   
   // Language Toggle Listener
-  document.getElementById('langToggle').addEventListener('click', () => {
-      currentLang = currentLang === 'en' ? 'zh' : 'en';
+  const langSelect = document.getElementById('langToggle');
+  langSelect.value = currentLang; // Set initial value
+  langSelect.addEventListener('change', (e) => {
+      currentLang = e.target.value;
       localStorage.setItem('lang', currentLang);
       updateLanguage();
       updateChart(); // Redraw chart to update legend and tooltips
