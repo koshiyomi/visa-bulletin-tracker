@@ -223,10 +223,10 @@ select option {
 }
 
 .checkbox-label.checked {
-  background: var(--accent);
-  border-color: var(--accent);
+  background: color-mix(in srgb, var(--cat-color) 40%, transparent);
+  border-color: var(--cat-color);
   color: #fff;
-  box-shadow: 0 0 15px rgba(139, 92, 246, 0.4);
+  box-shadow: 0 0 15px color-mix(in srgb, var(--cat-color) 30%, transparent);
 }
 
 /* Chart Container */
@@ -326,18 +326,18 @@ select option {
   margin: 10px 0 0 0;
   font-size: 1.4rem;
   font-weight: 700;
-  color: #67e8f9;
-  text-shadow: 0 0 10px rgba(103, 232, 249, 0.3);
+  color: #f8fafc;
+  text-shadow: 0 0 12px rgba(255, 255, 255, 0.2);
 }
 
 /* Responsive Design (Mobile & Tablet) */
 @media (max-width: 768px) {
   .container {
-    padding: 20px 15px;
+    padding: 60px 15px 20px 15px;
   }
   
   header {
-    margin-bottom: 25px;
+    margin-bottom: 30px;
   }
   
   header h1 {
@@ -345,7 +345,7 @@ select option {
   }
   
   .header-content {
-    gap: 12px;
+    gap: 20px;
   }
   
   .glass-card {
@@ -361,6 +361,11 @@ select option {
   select {
     width: 100%;
     min-width: 100%;
+  }
+
+  #langToggle {
+    width: auto;
+    min-width: auto;
   }
   
   .summary-panels {
@@ -393,12 +398,15 @@ select option {
   }
   
   .checkbox-group {
-    flex-direction: column;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
     width: 100%;
   }
   
   .checkbox-label {
-    width: 100%;
+    width: auto;
+    flex: 1 1 40%;
     justify-content: center;
   }
 }

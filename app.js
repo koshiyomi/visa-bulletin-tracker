@@ -4,8 +4,11 @@ let fullData = [];
 let countries = [];
 let chartInstance = null;
 
+Chart.defaults.font.family = "'Outfit', sans-serif";
+Chart.defaults.color = "#94a3b8";
+
 const chartColors = [
-    '#8b5cf6', '#06b6d4', '#f43f5e', '#f59e0b', '#10b981', '#FF9100'
+    '#8b5cf6', '#06b6d4', '#f43f5e', '#f59e0b', '#10b981', '#3b82f6'
 ];
 
 const i18n = {
@@ -393,6 +396,7 @@ const processInitialData = () => {
   simplifiedCategories.forEach((cat) => {
     const label = document.createElement('label');
     label.className = 'checkbox-label';
+    label.style.setProperty('--cat-color', chartColors[simplifiedCategories.indexOf(cat) % chartColors.length]);
     if (defaultCats.includes(cat)) label.classList.add('checked');
     
     const cb = document.createElement('input');
@@ -509,14 +513,16 @@ const updateChart = () => {
       const color = chartColors[idx % chartColors.length];
 
       datasets.push({
-          label: `${uiCat} (Historical)`, // Template literals
+          label: `${uiCat} (Historical)`,
           data: dataPoints,
           borderColor: color,
           backgroundColor: color,
+          borderWidth: 2,
           fill: false,
-          tension: 0.2,
-          pointRadius: 2,
-          pointHoverRadius: 5
+          tension: 0,
+          pointRadius: 0,
+          pointHoverRadius: 6,
+          pointHitRadius: 10
       });
 
           // Integrate predictive projections
@@ -546,9 +552,12 @@ const updateChart = () => {
                   borderColor: color,
                   backgroundColor: 'transparent',
                   borderDash: [5, 5],
+                  borderWidth: 2,
                   fill: false,
-                  tension: 0.2,
-                  pointRadius: 3,
+                  tension: 0,
+                  pointRadius: 0,
+                  pointHoverRadius: 6,
+                  pointHitRadius: 10,
                   pointStyle: 'circle',
                   segment: {
                       borderColor: ctx => ctx.p0DataIndex >= 12 ? color + '40' : color,
@@ -581,7 +590,15 @@ const updateChart = () => {
               if (d.is_current === "1") {
                   latestStatus[d.category] = currentLang === 'en' ? "Current" : "当前 (C)";
               } else if (d.is_unavailable === "1") {
-                  latestStatus[d.category] = currentLang === 'en' ? "Unavailable" : "不可用 (U)";
+                  let lastPd = null;
+                  for (let i = selectedHistory.length - 1; i >= 0; i--) {
+                      const histRecord = selectedHistory[i];
+                      if (histRecord.category === d.category && histRecord.is_unavailable !== "1" && histRecord.is_current !== "1") {
+                          lastPd = histRecord.priority_date;
+                          break;
+                      }
+                  }
+                  latestStatus[d.category] = lastPd ? `${lastPd} (U)` : (currentLang === 'en' ? "Unavailable" : "不可用 (U)");
               } else {
                   latestStatus[d.category] = d.priority_date;
               }
@@ -593,6 +610,15 @@ const updateChart = () => {
   document.getElementById('summary-eb1').textContent = latestStatus['1st'];
   document.getElementById('summary-eb2').textContent = latestStatus['2nd'];
   document.getElementById('summary-eb3').textContent = latestStatus['3rd'];
+  
+  document.getElementById('summary-bulletin-date').style.color = '#f8fafc';
+  document.getElementById('summary-bulletin-date').style.textShadow = '0 0 12px rgba(255,255,255,0.2)';
+  document.getElementById('summary-eb1').style.color = chartColors[0];
+  document.getElementById('summary-eb1').style.textShadow = `0 0 12px ${chartColors[0]}80`;
+  document.getElementById('summary-eb2').style.color = chartColors[1];
+  document.getElementById('summary-eb2').style.textShadow = `0 0 12px ${chartColors[1]}80`;
+  document.getElementById('summary-eb3').style.color = chartColors[2];
+  document.getElementById('summary-eb3').style.textShadow = `0 0 12px ${chartColors[2]}80`;
   
   document.getElementById('summaryPanels').style.display = 'flex';
 
@@ -641,7 +667,11 @@ const renderChart = (datasets, yAxisMetric) => {
             plugins: {
                 legend: {
                     labels: { 
-                        color: '#f8fafc',
+                        color: '#cbd5e1',
+                        font: { family: "'Outfit', sans-serif", size: 13, weight: 400 },
+                        usePointStyle: true,
+                        boxWidth: 8,
+                        boxHeight: 8,
                         filter: function(item, chart) {
                             return !item.text.includes('(Projected)');
                         }
