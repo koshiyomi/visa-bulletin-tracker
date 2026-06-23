@@ -23,6 +23,10 @@ html, body {
   overflow-x: hidden;
 }
 
+html {
+  background-color: #09090b;
+}
+
 body {
   margin: 0;
   min-height: -webkit-fill-available;
