@@ -97,16 +97,26 @@ window.predictFutureCutoff = (history, tableType, category, country, monthsAhead
       const eb1_eb2_spread = (eb1WaitDays - eb2WaitDays) / 365.25;
       const eb2_eb3_spread = (eb2WaitDays - eb3WaitDays) / 365.25;
       
+      // Upgrades to EB-1 are low volume, so weight is small.
+      // Downgrades to EB-3 are high volume, so weight is larger.
       if (category === '1st') {
-          arbitrageMultiplier = 1.0 + (eb1_eb2_spread * 0.60);
+          arbitrageMultiplier = 1.0 + (eb1_eb2_spread * 0.10);
       } else if (category === '2nd') {
-          arbitrageMultiplier = 1.0 + (eb2_eb3_spread * 0.60) - (eb1_eb2_spread * 0.60);
+          arbitrageMultiplier = 1.0 + (eb2_eb3_spread * 0.40) - (eb1_eb2_spread * 0.10);
       } else if (category === '3rd') {
-          arbitrageMultiplier = 1.0 - (eb2_eb3_spread * 0.60);
+          arbitrageMultiplier = 1.0 - (eb2_eb3_spread * 0.40);
       }
       
       if (Number.isNaN(arbitrageMultiplier)) arbitrageMultiplier = 1.0;
       arbitrageMultiplier = Math.max(0.3, Math.min(2.5, arbitrageMultiplier));
+      
+      // Calculate target catch-up days to prevent infinite crossover
+      // If we are artificially boosting speed, we should only boost until the backlog is cleared.
+      window.initialSpreadDays = {
+          '1st': Math.max(0, eb1WaitDays - eb2WaitDays),
+          '2nd': Math.max(0, eb2WaitDays - eb3WaitDays), // Assume EB-2 is catching up to EB-3
+          '3rd': 0 // EB-3 doesn't usually catch up to EB-2, it gets dragged down
+      }[category] || 0;
   }
 
   // Calculate average wait time to determine projection length
@@ -128,6 +138,7 @@ window.predictFutureCutoff = (history, tableType, category, country, monthsAhead
 
   const lastBulletinDate = new Date(lastRecord.bulletin_date);
   let lastPdDate = new Date(lastRecord.priority_date).getTime();
+  let accumulatedExtraDays = 0;
 
   // Generate future projections
   for (let i = 1; i <= targetMonthsAhead; i++) {
@@ -177,23 +188,23 @@ window.predictFutureCutoff = (history, tableType, category, country, monthsAhead
             economyMultiplier = qqqImpact * unempImpact;
         } else {
             economyMultiplier = 1.0 + ((qqqImpact * unempImpact - 1.0) * 0.25); // Minor effect on ROW/China
+            economyMultiplier = 1.0 + ((qqqImpact * unempImpact - 1.0) * 0.25);
         }
     }
 
     // 4. Blending (Mean Reversion)
     const blendFactor = Math.max(0.1, 1.0 - (i / 12) * 0.9);
     
-    // Apply Arbitrage multiplier without aggressive decay
-    // If the spread is large today, the macro trend of the category will permanently shift 
-    // until it reaches equilibrium.
-    const currentArbitrage = arbitrageMultiplier;
-    
+    // Use the adjusted arbitrage multiplier directly (no hard clamping)
+    // The adjusted weights prevent it from exploding to 1.8+
+    let currentArbitrage = arbitrageMultiplier;
+
     // Apply Arbitrage multiplier
     const adjustedMacroAvg = macroAvg * currentArbitrage;
     
-    // If arbitrage is strongly positive (>1.2), prevent recentAvg from trapping us at 0
+    // If arbitrage is strongly positive (>1.05 for China/ROW), prevent recentAvg from trapping us at 0
     let baseRecent = recentAvg;
-    if (currentArbitrage > 1.2 && recentAvg < macroAvg * 0.5) {
+    if (currentArbitrage > 1.05 && recentAvg < macroAvg * 0.5) {
         baseRecent = macroAvg * 0.5; // Pent-up demand breaks the zero-momentum trap
     }
     const adjustedRecentAvg = baseRecent * currentArbitrage;
@@ -205,7 +216,6 @@ window.predictFutureCutoff = (history, tableType, category, country, monthsAhead
     // Apply external factor boost if provided (for future API expansion)
     const boostMultiplier = externalFactors?.boost ?? 1;
     
-    // Calculate new priority date timestamp
     lastPdDate += (blendedDays * boostMultiplier) * DAY_MS;
     
     predictions.push({

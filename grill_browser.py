@@ -14,6 +14,12 @@ async def main():
                 const response = await fetch("data/visa_bulletin_all.csv");
                 const text = await response.text();
                 
+                const macroResp = await fetch('data/macro.json');
+                let macroFactors = null;
+                if (macroResp.ok) {
+                    macroFactors = await macroResp.json();
+                }
+
                 const lines = text.trim().split("\\n");
                 const headers = lines[0].split(",");
                 const fullData = lines.slice(1).map(line => {
@@ -32,7 +38,7 @@ async def main():
                 
                 const res = {};
                 for (const cat of ['1st', '2nd', '3rd']) {
-                    const preds = window.predictFutureCutoff(fullData, 'Final_Action', cat, 'India', 36, null);
+                    const preds = window.predictFutureCutoff(fullData, 'Final_Action', cat, 'India', 36, macroFactors);
                     if (preds.length > 0) {
                         res[cat] = [
                             preds[11] ? new Date(preds[11].priority_date).toISOString().split('T')[0] : null,
