@@ -33,7 +33,7 @@ body {
 body::before, body::after {
   content: '';
   position: fixed;
-  top: 0; left: 0; width: 100%; height: 100%;
+  top: -10vh; left: -10vw; width: 120vw; height: 120vh;
   z-index: -1;
   pointer-events: none;
 }
@@ -72,6 +72,7 @@ header {
   justify-content: center;
   gap: 20px;
   position: relative;
+  flex-wrap: wrap;
 }
 
 header h1 {
@@ -327,4 +328,77 @@ select option {
   font-weight: 700;
   color: #67e8f9;
   text-shadow: 0 0 10px rgba(103, 232, 249, 0.3);
+}
+
+/* Responsive Design (Mobile & Tablet) */
+@media (max-width: 768px) {
+  .container {
+    padding: 20px 15px;
+  }
+  
+  header {
+    margin-bottom: 25px;
+  }
+  
+  header h1 {
+    font-size: 2.2rem;
+  }
+  
+  .header-content {
+    gap: 12px;
+  }
+  
+  .glass-card {
+    padding: 20px 15px;
+    margin-bottom: 20px;
+  }
+  
+  .controls-row {
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  select {
+    width: 100%;
+    min-width: 100%;
+  }
+  
+  .summary-panels {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+  }
+  
+  .summary-card {
+    min-width: 0;
+    padding: 15px 10px;
+  }
+  
+  .summary-card p {
+    font-size: 1.2rem;
+  }
+  
+  .chart-container {
+    height: 350px;
+  }
+}
+
+@media (max-width: 480px) {
+  header h1 {
+    font-size: 1.8rem;
+  }
+  
+  .summary-panels {
+    grid-template-columns: 1fr;
+  }
+  
+  .checkbox-group {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .checkbox-label {
+    width: 100%;
+    justify-content: center;
+  }
 }
