@@ -218,9 +218,23 @@ window.predictFutureCutoff = (history, tableType, category, country, monthsAhead
     
     lastPdDate += (blendedDays * boostMultiplier) * DAY_MS;
     
+    // Stop predicting if the category becomes "Current" (Wait Time <= 0)
+    if (lastPdDate >= lastBulletinDate.getTime()) {
+        lastPdDate = lastBulletinDate.getTime();
+        predictions.push({
+            bulletin_date: newBulletinStr,
+            priority_date: new Date(lastPdDate).toISOString().split('T')[0],
+            table_type: tableType,
+            category,
+            country,
+            is_projected: true
+        });
+        break; // End the projection early
+    }
+    
     predictions.push({
       bulletin_date: newBulletinStr,
-      priority_date: lastPdDate,
+      priority_date: new Date(lastPdDate).toISOString().split('T')[0],
       table_type: tableType,
       category,
       country,
