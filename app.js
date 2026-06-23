@@ -630,6 +630,72 @@ const updateChart = () => {
  * @param {Array} datasets - Chart.js dataset objects
  * @param {string} yAxisMetric - Currently selected y-axis mode
  */
+
+const externalTooltipHandler = (context) => {
+    let tooltipEl = document.getElementById('mobileTooltip');
+    if (!tooltipEl) return;
+
+
+
+    const tooltipModel = context.tooltip;
+
+    if (tooltipModel.opacity === 0) {
+        tooltipEl.style.opacity = 0;
+        return;
+    }
+
+    if (tooltipModel.body) {
+        const titleLines = tooltipModel.title || [];
+        const bodyLines = tooltipModel.body.map(b => b.lines);
+
+        let innerHtml = `<div style="width: 100%; font-weight: 700; color: #f8fafc; margin-bottom: 4px;">${titleLines[0]}</div>`;
+        
+        bodyLines.forEach((body, i) => {
+            const colors = tooltipModel.labelColors[i];
+            innerHtml += `<div style="display: flex; align-items: center; background: rgba(255,255,255,0.05); padding: 4px 10px; border-radius: 12px;">
+                <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; background: ${colors.backgroundColor};"></span>
+                <span style="white-space: nowrap;">${body}</span>
+            </div>`;
+        });
+
+        tooltipEl.innerHTML = innerHtml;
+        tooltipEl.style.display = 'flex';
+        tooltipEl.style.opacity = 1;
+    }
+};
+
+const mobileTooltipManager = {
+    id: 'mobileTooltipManager',
+    beforeTooltipDraw: (chart) => {
+        if (window.innerWidth <= 768) {
+            return false; // Prevent default tooltip rendering on mobile
+        }
+    }
+};
+
+const crosshairPlugin = {
+    id: 'crosshair',
+    afterDraw: chart => {
+        if (chart.tooltip?._active && chart.tooltip._active.length) {
+            const activePoint = chart.tooltip._active[0];
+            const ctx = chart.ctx;
+            const x = activePoint.element.x;
+            const topY = chart.scales.y.top;
+            const bottomY = chart.scales.y.bottom;
+
+            ctx.save();
+            ctx.beginPath();
+            ctx.moveTo(x, topY);
+            ctx.lineTo(x, bottomY);
+            ctx.lineWidth = 1;
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+            ctx.setLineDash([5, 5]);
+            ctx.stroke();
+            ctx.restore();
+        }
+    }
+};
+
 const renderChart = (datasets, yAxisMetric) => {
     const isWaitTime = yAxisMetric === 'wait_time';
     const ctx = document.getElementById('pdChart').getContext('2d');
@@ -639,29 +705,39 @@ const renderChart = (datasets, yAxisMetric) => {
     chartInstance = new Chart(ctx, {
         type: 'line',
         data: { datasets }, // Object property shorthand
+        plugins: [crosshairPlugin],
         options: {
             responsive: true,
             maintainAspectRatio: false,
             color: '#f8fafc',
             interaction: {
-                mode: 'nearest',
+                mode: 'index',
                 axis: 'x',
                 intersect: false,
             },
             scales: {
                 x: {
                     type: 'time',
-                    time: { unit: 'month' },
+                    time: { unit: 'month', tooltipFormat: 'yyyy-MM-dd' },
                     title: { display: true, text: 'Bulletin Date', color: '#94a3b8' },
                     grid: { color: 'rgba(255,255,255,0.1)' },
                     ticks: { color: '#94a3b8' }
                 },
                 y: {
                     type: isWaitTime ? 'linear' : 'time',
-                    time: isWaitTime ? undefined : { unit: 'month' },
-                    title: { display: true, text: isWaitTime ? 'Wait Time (Years)' : 'Priority Date', color: '#94a3b8' },
+                    time: isWaitTime ? undefined : { 
+                        displayFormats: {
+                            month: "MM/yy",
+                            quarter: "MM/yy",
+                            year: "yy"
+                        }
+                    },
+                    title: { display: false },
                     grid: { color: 'rgba(255,255,255,0.1)' },
-                    ticks: { color: '#94a3b8' }
+                    ticks: { 
+                        color: '#94a3b8', 
+                        maxTicksLimit: window.innerWidth <= 768 ? 6 : 10 
+                    }
                 }
             },
             plugins: {
@@ -678,6 +754,21 @@ const renderChart = (datasets, yAxisMetric) => {
                     }
                 },
                 tooltip: {
+                    enabled: false,
+                    external: externalTooltipHandler,
+                    backgroundColor: 'rgba(15, 23, 42, 0.85)',
+                    titleColor: '#f8fafc',
+                    bodyColor: '#cbd5e1',
+                    titleFont: { family: "'Outfit', sans-serif", size: 14, weight: 600 },
+                    bodyFont: { family: "'Outfit', sans-serif", size: 13, weight: 400 },
+                    padding: 12,
+                    cornerRadius: 12,
+                    displayColors: true,
+                    borderColor: 'rgba(255, 255, 255, 0.15)',
+                    borderWidth: 1,
+                    caretSize: 6,
+                    caretPadding: 10,
+                    boxPadding: 4,
                     filter: function(tooltipItem) {
                         // The 0th index of any Projected dataset is the anchor point shared with the Historical dataset.
                         // We hide it so the tooltip doesn't show duplicate identical entries when hovering over the junction.
@@ -692,6 +783,13 @@ const renderChart = (datasets, yAxisMetric) => {
                     borderColor: 'rgba(255,255,255,0.1)',
                     borderWidth: 1,
                     callbacks: {
+                        title: (context) => {
+                            if (context.length > 0) {
+                                const d = new Date(context[0].parsed.x);
+                                return d.toISOString().split('T')[0];
+                            }
+                            return '';
+                        },
                         label: (context) => { // Arrow function
                             let label = context.dataset.label || '';
                             if (label) label += ': ';
@@ -707,11 +805,11 @@ const renderChart = (datasets, yAxisMetric) => {
                 },
                 zoom: {
                     pan: {
-                        enabled: true,
+                        enabled: false,
                         mode: 'x',
                     },
                     zoom: {
-                        wheel: { enabled: true, speed: 0.1 },
+                        wheel: { enabled: false, speed: 0.1 },
                         pinch: { enabled: true },
                         mode: 'x'
                     }
@@ -728,3 +826,10 @@ document.getElementById('pdChart').addEventListener('dblclick', () => {
 
 // Init execution
 window.onload = loadData;
+
+window.addEventListener('resize', () => {
+    if (chartInstance) {
+        chartInstance.options.scales.y.ticks.maxTicksLimit = window.innerWidth <= 768 ? 6 : 10;
+        chartInstance.update('none');
+    }
+});

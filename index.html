@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Visa Bulletin Tracker & Predictor | Green Card Priority Dates</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%230f172a'/><path d='M25 70 L45 50 L60 60 L80 30' stroke='%238b5cf6' stroke-width='10' fill='none' stroke-linecap='round' stroke-linejoin='round'/><circle cx='80' cy='30' r='8' fill='%2306b6d4'/></svg>">
 <meta name="description" content="Track and predict US Visa Bulletin priority dates for EB-1, EB-2, EB-3. Uses historical data, macro-economic factors, and category spreads to predict wait times for India, China, and ROW.">
 <meta name="keywords" content="Visa Bulletin, Priority Date, USCIS, Green Card, EB-2, EB-3, India Retrogression, US Immigration Prediction">
 <meta name="author" content="koshiyomi">
@@ -108,6 +109,7 @@
     <div class="glass-card">
       <h2 class="card-title" data-i18n="chart_title">Priority Date Movement</h2>
       <div class="card-subtitle" data-i18n="chart_subtitle">Drag to Pan • Scroll to Zoom • Double Click to Reset</div>
+      <div id="mobileTooltip" style="min-height: 24px; text-align: center; font-size: 0.85rem; color: #cbd5e1; margin-bottom: 10px; display: none; justify-content: center; flex-wrap: wrap; gap: 8px;"></div>
       <div class="chart-container">
         <canvas id="pdChart"></canvas>
       </div>
