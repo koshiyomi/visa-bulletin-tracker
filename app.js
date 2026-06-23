@@ -26,6 +26,7 @@ const i18n = {
         visa_categories: "Visa Categories",
         chart_title: "Priority Date Movement",
         chart_subtitle: "Drag to Pan • Scroll to Zoom • Double Click to Reset",
+        chart_subtitle_mobile: "Swipe to Pan • Pinch to Zoom • Double Tap to Reset",
         faq_title: "Frequently Asked Questions",
         latest_bulletin: "Latest Bulletin",
         faq_1_q: "What is a Priority Date?",
@@ -64,6 +65,7 @@ const i18n = {
         visa_categories: "签证类别",
         chart_title: "排期走势与预测",
         chart_subtitle: "拖拽平移 • 滚动缩放 • 双击还原",
+        chart_subtitle_mobile: "滑动平移 • 双指缩放 • 双击还原",
         faq_title: "常见问题解答 (FAQ)",
         latest_bulletin: "最新排期表",
         faq_1_q: "什么是优先日 (Priority Date)？",
@@ -102,6 +104,7 @@ const i18n = {
         visa_categories: "簽證類別",
         chart_title: "排期走勢與預測",
         chart_subtitle: "拖拽平移 • 滾動縮放 • 雙擊還原",
+        chart_subtitle_mobile: "滑動平移 • 雙指縮放 • 雙擊還原",
         faq_title: "常見問題解答 (FAQ)",
         latest_bulletin: "最新排期表",
         faq_1_q: "什麼是優先日 (Priority Date)？",
@@ -140,6 +143,7 @@ const i18n = {
         visa_categories: "Categorías de Visas",
         chart_title: "Movimiento de Fecha de Prioridad",
         chart_subtitle: "Arrastra para desplazar • Desplaza para hacer zoom • Doble clic para reiniciar",
+        chart_subtitle_mobile: "Desliza para desplazar • Pellizca para hacer zoom • Doble toque para reiniciar",
         faq_title: "Preguntas Frecuentes",
         latest_bulletin: "Último Boletín",
         faq_1_q: "¿Qué es una Fecha de Prioridad?",
@@ -178,6 +182,7 @@ const i18n = {
         visa_categories: "Hạng mục Visa",
         chart_title: "Biến động Ngày Ưu tiên",
         chart_subtitle: "Kéo để di chuyển • Cuộn để thu phóng • Nhấp đúp để đặt lại",
+        chart_subtitle_mobile: "Vuốt để di chuyển • Chụm để thu phóng • Chạm đúp để đặt lại",
         faq_title: "Câu hỏi Thường gặp",
         latest_bulletin: "Bản tin Mới nhất",
         faq_1_q: "Ngày Ưu tiên là gì?",
@@ -216,6 +221,7 @@ const i18n = {
         visa_categories: "वीज़ा श्रेणियां",
         chart_title: "प्राथमिकता तिथि संचलन",
         chart_subtitle: "पैन करने के लिए खींचें • ज़ूम करने के लिए स्क्रॉल करें • रीसेट करने के लिए डबल क्लिक करें",
+        chart_subtitle_mobile: "पैन करने के लिए स्वाइप करें • ज़ूम करने के लिए पिंच करें • रीसेट करने के लिए डबल टैप करें",
         faq_title: "अक्सर पूछे जाने वाले प्रश्न",
         latest_bulletin: "नवीनतम बुलेटिन",
         faq_1_q: "प्राथमिकता तिथि (Priority Date) क्या है?",
@@ -247,7 +253,11 @@ const updateLanguage = () => {
     document.querySelectorAll('[data-i18n]').forEach(el => {
         const key = el.getAttribute('data-i18n');
         if (i18n[currentLang][key]) {
-            el.innerHTML = i18n[currentLang][key]; // Using innerHTML to support <strong> tags in FAQ
+            if (key === 'chart_subtitle' && window.innerWidth < 768) {
+                el.innerHTML = i18n[currentLang]['chart_subtitle_mobile'] || i18n[currentLang][key];
+            } else {
+                el.innerHTML = i18n[currentLang][key]; // Using innerHTML to support <strong> tags in FAQ
+            }
         }
     });
     
@@ -426,14 +436,40 @@ const processInitialData = () => {
       });
   });
   
-  // Language Toggle Listener
-  const langSelect = document.getElementById('langToggle');
-  langSelect.value = currentLang; // Set initial value
-  langSelect.addEventListener('change', (e) => {
-      currentLang = e.target.value;
-      localStorage.setItem('lang', currentLang);
-      updateLanguage();
-      updateChart(); // Redraw chart to update legend and tooltips
+  // Language Switcher Logic
+  const langContainer = document.getElementById('langSwitcherContainer');
+  const langTrigger = document.getElementById('langTrigger');
+  const langOptions = document.querySelectorAll('.lang-option');
+  
+  // Set initial selected state
+  langOptions.forEach(opt => {
+      if(opt.dataset.val === currentLang) {
+          opt.classList.add('selected');
+      }
+      
+      opt.addEventListener('click', (e) => {
+          e.stopPropagation();
+          langOptions.forEach(o => o.classList.remove('selected'));
+          opt.classList.add('selected');
+          langContainer.classList.remove('open');
+          
+          currentLang = opt.dataset.val;
+          localStorage.setItem('lang', currentLang);
+          updateLanguage();
+          updateChart();
+      });
+  });
+
+  langTrigger.addEventListener('click', (e) => {
+      e.stopPropagation();
+      // Close other selects if any
+      document.querySelectorAll('.custom-select-container.open').forEach(c => c.classList.remove('open'));
+      langContainer.classList.toggle('open');
+  });
+
+  // Make sure clicking outside closes the lang switcher
+  document.addEventListener('click', () => {
+      langContainer.classList.remove('open');
   });
 
   updateLanguage();
@@ -845,10 +881,10 @@ window.onload = () => {
 
 window.addEventListener('resize', () => {
     const subtitleEl = document.querySelector('[data-i18n="chart_subtitle"]');
-    if (subtitleEl) {
-        subtitleEl.innerText = window.innerWidth >= 768 
-            ? (window.currentLang === 'en' ? 'Drag to Pan • Scroll to Zoom • Double Click to Reset' : '拖拽平移 · 滚轮缩放 · 双击还原')
-            : (window.currentLang === 'en' ? 'Swipe to Pan • Pinch to Zoom • Double Tap to Reset' : '滑动平移 · 双指缩放 · 双击还原');
+    if (subtitleEl && i18n[currentLang]) {
+        subtitleEl.innerHTML = window.innerWidth >= 768 
+            ? i18n[currentLang]['chart_subtitle'] 
+            : (i18n[currentLang]['chart_subtitle_mobile'] || i18n[currentLang]['chart_subtitle']);
     }
     
     if (chartInstance) {
@@ -867,7 +903,7 @@ window.addEventListener('resize', () => {
 
 // --- Custom Select UI ---
 function initCustomSelects() {
-    const selects = ['countrySelect', 'tableSelect', 'yAxisSelect', 'langToggle'];
+    const selects = ['countrySelect', 'tableSelect', 'yAxisSelect'];
     selects.forEach(id => {
         const originalSelect = document.getElementById(id);
         if (!originalSelect) return;
