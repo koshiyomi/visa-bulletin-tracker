@@ -714,8 +714,7 @@ const renderChart = (datasets, yAxisMetric) => {
             maintainAspectRatio: false,
             color: '#f8fafc',
             interaction: {
-                mode: 'index',
-                axis: 'x',
+                mode: 'x',
                 intersect: false,
             },
             scales: {
@@ -772,12 +771,17 @@ const renderChart = (datasets, yAxisMetric) => {
                     caretSize: 6,
                     caretPadding: 10,
                     boxPadding: 4,
-                    filter: function(tooltipItem) {
-                        // The 0th index of any Projected dataset is the anchor point shared with the Historical dataset.
-                        // We hide it so the tooltip doesn't show duplicate identical entries when hovering over the junction.
+                    filter: function(tooltipItem, index, tooltipItems) {
                         if (tooltipItem.dataset.label.includes('(Projected)') && tooltipItem.dataIndex === 0) {
                             return false;
                         }
+                        
+                        // Only keep the first item for each dataset to prevent duplicates when using mode: 'x'
+                        const firstIndex = tooltipItems.findIndex(item => item.datasetIndex === tooltipItem.datasetIndex);
+                        if (index !== firstIndex) {
+                            return false;
+                        }
+                        
                         return true;
                     },
                     backgroundColor: 'rgba(15, 23, 42, 0.9)',
@@ -808,11 +812,11 @@ const renderChart = (datasets, yAxisMetric) => {
                 },
                 zoom: {
                     pan: {
-                        enabled: false,
+                        enabled: true,
                         mode: 'x',
                     },
                     zoom: {
-                        wheel: { enabled: false, speed: 0.1 },
+                        wheel: { enabled: true, speed: 0.1 },
                         pinch: { enabled: true },
                         mode: 'x'
                     }
@@ -828,9 +832,19 @@ document.getElementById('pdChart').addEventListener('dblclick', () => {
 });
 
 // Init execution
-window.onload = loadData;
+window.onload = () => {
+    loadData();
+    window.dispatchEvent(new Event('resize'));
+};
 
 window.addEventListener('resize', () => {
+    const subtitleEl = document.querySelector('[data-i18n="chart_subtitle"]');
+    if (subtitleEl) {
+        subtitleEl.innerText = window.innerWidth >= 768 
+            ? (window.currentLang === 'en' ? 'Drag to Pan • Scroll to Zoom • Double Click to Reset' : '拖拽平移 · 滚轮缩放 · 双击还原')
+            : (window.currentLang === 'en' ? 'Swipe to Pan • Pinch to Zoom • Double Tap to Reset' : '滑动平移 · 双指缩放 · 双击还原');
+    }
+    
     if (chartInstance) {
         const isDesktop = window.innerWidth >= 768;
         chartInstance.options.plugins.tooltip.enabled = isDesktop;
