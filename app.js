@@ -14,6 +14,8 @@ const chartColors = [
 const i18n = {
     en: {
         title: "Visa Bulletin Tracker",
+        seo_title: "Visa Bulletin Tracker & Predictor | Green Card Priority Dates",
+        seo_desc: "Track and predict US Visa Bulletin priority dates for EB-1, EB-2, EB-3. Uses historical data and macro-economic factors to predict wait times.",
         subtitle: "Predicting Priority Dates with Historical Data",
         filters: "Filters",
         country: "Country of Origin",
@@ -53,6 +55,8 @@ const i18n = {
     },
     zh: {
         title: "排期预测追踪",
+        seo_title: "美国绿卡排期追踪与预测 | 优先日走势分析",
+        seo_desc: "追踪并预测美国职业移民（EB-1, EB-2, EB-3）绿卡排期走势，基于历史数据与宏观经济指标预测中国大陆及印度的优先日等待时间。",
         subtitle: "基于历史数据的优先日排期预测",
         filters: "筛选器",
         country: "出生地国家",
@@ -92,6 +96,8 @@ const i18n = {
     },
     "zh-TW": {
         title: "排期預測追蹤",
+        seo_title: "美國綠卡排期追蹤與預測 | 優先日走勢分析",
+        seo_desc: "追蹤並預測美國職業移民（EB-1, EB-2, EB-3）綠卡排期走勢，基於歷史數據與總體經濟指標預測等待時間。",
         subtitle: "基於歷史數據的優先日排期預測",
         filters: "篩選器",
         country: "出生地國家",
@@ -209,6 +215,8 @@ const i18n = {
     },
     hi: {
         title: "वीज़ा बुलेटिन ट्रैकर",
+        seo_title: "वीज़ा बुलेटिन ट्रैकर और प्रेडिक्टर | ग्रीन कार्ड प्राथमिकता तिथियां",
+        seo_desc: "ईबी-1, ईबी-2, ईबी-3 के लिए अमेरिकी वीज़ा बुलेटिन प्राथमिकता तिथियों को ट्रैक और भविष्यवाणी करें। ऐतिहासिक डेटा का उपयोग करके प्रतीक्षा समय की भविष्यवाणी करता है।",
         subtitle: "ऐतिहासिक डेटा के साथ प्राथमिकता तिथियों की भविष्यवाणी",
         filters: "फ़िल्टर",
         country: "मूल देश",
